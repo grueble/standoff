@@ -1,9 +1,7 @@
-#ifndef _PLAYER_
-#define _PLAYER_
+#ifndef _PLAYER_HPP_
+#define _PLAYER_HPP_
 
 #include <vector>
-
-#include
 
 namespace Player_n
 {
@@ -18,30 +16,30 @@ namespace Player_n
 
       // \Name: GetReservePieces
       // \Description:
-      // - returns the address of this player's reserve pieces
+      // - returns a vector of this player's reserve pieces
       // \Argument:
       // - none
       // \Returns
-      // - std::vector<Piece>&, this player's reserve pieces
-      std::vector<Piece>& GetReservePieces(void);
+      // - std::vector<Piece>&, the address of this player's reserve pieces
+      std::vector<Piece>& getReservePieces(void);
 
       // \Name: GetLivePieces
       // \Description:
-      // - returns the address of this player's live pieces
+      // - returns a vector of this player's live pieces
       // \Argument:
       // - none
       // \Returns
-      // - std::vector<Piece>&, this player's live pieces
-      std::vector<Piece>& GetLivePieces(void);
+      // - std::vector<Piece>&, the address of this player's live pieces
+      std::vector<Piece>& getLivePieces(void);
 
       // \Name: GetDeadPieces
       // \Description:
-      // - returns the address of this player's dead pieces
+      // - returns a vector of this player's dead pieces
       // \Argument:
       // - none
       // \Returns
-      // - std::vector<Piece>&, this player's dead pieces
-      std::vector<Piece>& GetDeadPieces(void);
+      // - std::vector<Piece>&, the address of this player's dead pieces
+      std::vector<Piece>& getDeadPieces(void);
 
       // \Name: Shoot
       // \Description:
@@ -50,7 +48,7 @@ namespace Player_n
       // - none
       // \Returns
       // - none
-      void Shoot(void);
+      void shoot(void);
 
    protected:
       // \Name: InitPieces
@@ -60,7 +58,7 @@ namespace Player_n
       // - none
       // \Returns
       // - none
-      void InitPieces(void);
+      void initPieces(void);
 
       // piece vectors
       std::vector<Piece> mReservePieces;

@@ -53,6 +53,20 @@ void Piece_c::setPosition(const std::pair<int, int> new_position)
    }
 }
 
+bool Piece_c::isValidDeployment(std::pair<int, int> deploy_position)
+{
+   std::vector<std::pair<int, int>>::iterator it;
+   for (it = mDeploymentZones.begin(); it != mDeploymentZones.end(); ++it)
+   {
+      if (*it == deploy_position)
+      {
+         return true;
+      }
+   }
+   
+   return false;
+}
+
 bool Piece_c::isValidMove(std::pair<int, int> move_position)
 {
    if (abs(mPosition.first - move_position.first <= 1))

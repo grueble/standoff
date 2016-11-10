@@ -18,34 +18,34 @@ Player_c::~Player_c(void)
 }
 
 // GetReservePieces
-std::vector<Piece>& GetReservePieces(void)
+std::vector<Piece>& getReservePieces(void)
 {
    return mReservePieces;
 }
 
 // GetLivePieces
-std::vector<Piece>& GetLivePieces(void)
+std::vector<Piece>& getLivePieces(void)
 {
    return mLivePieces;
 }
 
 // GetDeadPieces
-std::vector<Piece>& GetDeadPieces(void)
+std::vector<Piece>& getDeadPieces(void)
 {
    return mDeadPieces;
 }
 
-void Shoot(void)
+void shoot(void)
 {
 
 }
 
-void InitPieces(void)
+void initPieces(void)
 {
    // add pawns
    for (int i = 0; i < NUM_PAWNS; ++i)
    {
-      Pawn new_pawn = new Pawn(); // this will not be an empty constructor
+      Pawn new_pawn = new Pawn();
       mReservePieces.push_back(new_pawn);
    }
 
