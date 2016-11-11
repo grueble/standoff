@@ -2,17 +2,29 @@
 
 using namespace Piece_n;
 
-Gun_c::Gun_c():
-   Piece_c()
+Gun_c::Gun_c(Player_c& player_owner) :
+   Piece_c(player_owner)
 {
-   // Initialize mDeploymentZones
+   mDeploymentZones = DEPLOYMENT_ZONES;
 }
 
 Gun_c::~Gun_c()
 {
 }
 
-void Gun_c::setDirection(Direction_e new_direction)
+const Direction_e& Gun_c::getDirection()
+{
+   if (mDirection)
+   {
+      return mDirection;
+   }
+   else
+   {
+      // fire an error
+   }
+}
+
+void Gun_c::setDirection(const Direction_e& new_direction)
 {
    if (!mDirection)
    {
@@ -21,6 +33,13 @@ void Gun_c::setDirection(Direction_e new_direction)
    }
    else 
    {
-      mDirection = new_direction;
+      if (mDirection != new_direction)
+      {
+         mDirection = new_direction;
+      }
+      else
+      {
+         // fire an error message
+      }
    }
 }

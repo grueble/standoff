@@ -1,6 +1,8 @@
 #ifndef _PIECE_HPP_
 #define _PIECE_HPP_
 
+#include <pair>
+
 #include "Player.hpp"
 
 namespace Piece_n
@@ -14,11 +16,19 @@ namespace Piece_n
       LEFT = 3
    };
 
+   // the in-play status for any particular piece
+   enum PlayState_e
+   {
+      RESERVE = 0,
+      LIVE = 1,
+      DEAD = 2
+   };
+
    class Piece_c
    {
    public:
-      // default constructor
-      Piece_c();
+      // constructor
+      Piece_c(Player_c& player_owner);
 
       // default destructor
       ~Piece_c();
@@ -48,7 +58,7 @@ namespace Piece_n
       // - none
       // \Returns
       // - Direction_e, this Piece's direction
-      const Direction_e& getDirection();
+      const virtual Direction_e& getDirection() = 0;
 
       // May remove this, only guns and slinger have direction
       // \Name: setDirection
@@ -58,7 +68,7 @@ namespace Piece_n
       // - Direction_e, the new direction to set
       // \Returns
       // - none 
-      virtual void setDirection(Direction_e const& new_direction) = 0;
+      virtual void setDirection(const Direction_e& new_direction) = 0;
 
       // \Name: isValidDeployment
       // \Description:
@@ -67,7 +77,7 @@ namespace Piece_n
       // - std::pair<int, int>, the deployment position to check
       // \Returns
       // - bool, true if the deployment is valid; false o/w
-      bool isValidDeployment(std::pair<int, int> const& deploy_position);
+      bool isValidDeployment(const std::pair<int, int>& deploy_position);
 
       // \Name: isValidMove
       // \Description:
@@ -76,20 +86,21 @@ namespace Piece_n
       // - std::pair<int, int>, the move position to check
       // \Returns
       // - bool, true if the move is valid; false o/w
-      bool isValidMove(std::pair<int, int> const& move_position);
+      bool isValidMove(const std::pair<int, int>& move_position);
 
    protected:
       // reference to the Player that owns this Piece
-      // -> do I change this out for a player ID? this would make instantiation easier. currently never calling Player methods
       Player_c &mPlayer;
 
-      // this Piece's current board position
-      // -> this field is null if this Piece is not in play [ instead of this, may want to initialize to (-1, -1) ]
+      // this Piece's current board position, or null if it is not currently in play
       std::pair<int, int> mPosition;
 
       // stores a Piece's available deployment zones
       // -> these are initialized differently based on Piece type
       std::vector<std::pair<int, int>> mDeploymentZones;
+
+      // this Piece's current in-play status
+      PlayState_e mPlayState;
    };
 }
 

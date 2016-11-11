@@ -5,16 +5,25 @@
 
 namespace Piece_n
 {
+   static const std::vector<std::pair<int, int>> DEPLOYMENT_ZONES = {};
+
    class Gun_c : public Piece_c
    {
    public:
-      // default constructor
-      Gun_c();
+      // constructor
+      Gun_c(Player_c& player_owner);
 
       // default destructor
       ~Gun_c();
 
-      // getSprite function to load an image for drawing
+      // \Name: s=getDirection
+      // \Description:
+      // - gets this Piece's direction
+      // \Argument:
+      // - none
+      // \Returns
+      // - Direction_e&, this Piece's direction member field
+      const Direction_e& getDirection();
 
       // \Name: setDirection
       // \Description:
@@ -23,7 +32,7 @@ namespace Piece_n
       // - Direction_e, the new direction to set
       // \Returns
       // - none
-      void setDirection(Direction_e const& new_direction);
+      void setDirection(const Direction_e& new_direction);
 
    protected:
       // the direction this Gun is currently facing

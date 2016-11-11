@@ -5,17 +5,15 @@
 
 using namespace Game_n;
 
-Game_c::Game_c(int first_user_id, int second_user_id) :
-   mPlayer1(Player_c(findUserById(first_user_id))),
-   mPlayer2(Player_c(findUserById(second_user_id)))
+Game_c::Game_c(int first_user_id, int second_user_id)
 {
    // store off the IDs of the participating users
    mUserIds['1'] = first_user_id;
    mUserIds['2'] = second_user_id;
 
    // instantiate two new Player objects to handle in-game events
-   // mPlayer1 = Player_c(findUserById(first_user_id));
-   // mPlayer2 = Player_c(findUserById(second_user_id));
+   mPlayer1 = Player_c(findUserById(first_user_id));
+   mPlayer2 = Player_c(findUserById(second_user_id));
 }
 
 Game_c::~Game_c()

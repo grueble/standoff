@@ -2,17 +2,22 @@
 
 using namespace Piece_n;
 
-Slinger_c::Slinger_c():
-   Piece_c()
+Slinger_c::Slinger_c(Player_c& player_owner) :
+   Piece_c(player_owner)
 {
-   // Initialize mDeploymentZones
+   mDeploymentZones = DEPLOYMENT_ZONES;
 }
 
 Slinger_c::~Slinger_c()
 {
 }
 
-void Slinger_c::setDirection(Direction_e new_direction)
+const Direction_e& Slinger_c::getDirection()
+{
+
+}
+
+void Slinger_c::setDirection(const Direction_e& new_direction)
 {
    if (!mDirection)
    {
@@ -21,7 +26,14 @@ void Slinger_c::setDirection(Direction_e new_direction)
    }
    else 
    {
-      mPrimaryDirection = new_direction;
-      mSecondaryDirection = (new_direction + 1) % 4;
+      if (mPrimaryDirection != new_direction)
+      {
+         mPrimaryDirection = new_direction;
+         mSecondaryDirection = (new_direction - 1) % 4;
+      }
+      else
+      {
+         // fire an error message
+      }
    }
 }

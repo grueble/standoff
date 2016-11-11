@@ -5,16 +5,25 @@
 
 namespace Piece_n
 {
+   static const std::vector<std::pair<int, int>> DEPLOYMENT_ZONES = {};
+
    class Slinger_c : public Piece-c
    {
    public:
-      //default constructor
-      Slinger_c();
+      // constructor
+      Slinger_c(Player_c& player_owner);
 
-      //default destructor
+      // default destructor
       ~Slinger_c();
 
-      // getSprite function to load an image for drawing
+      // \Name: s=getDirection
+      // \Description:
+      // - gets this Piece's direction
+      // \Argument:
+      // - none
+      // \Returns
+      // - Direction_e&, this Piece's direction member field
+      const Direction_e& getDirection()
 
       // \Name: setDirection
       // \Description:
@@ -23,13 +32,13 @@ namespace Piece_n
       // - Direction_e, the new direction to set
       // \Returns
       // - none
-      void setDirection(Direction_e const& new_direction);
+      void setDirection(const Direction_e& new_direction);
 
    protected:
       // this Slinger's primary direction
       Direction_e mPrimaryDirection;
 
-      // this Slinger's secondary direction, 90 degrees clockwise of the primary direction
+      // this Slinger's secondary direction, 90 degrees counter-clockwise from the primary direction
       Direction_e mSecondaryDirection;
    };
 }

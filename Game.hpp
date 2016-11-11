@@ -25,6 +25,15 @@ namespace Game_n
       // \Returns
       // - none
       void start();
+
+      // \Name: shootout
+      // \Description:
+      // - initiates a shootout event for both players
+      // \Argument:
+      // - none
+      // \Returns
+      // - none
+      void shootout();
    protected:
       // \Name: findUserById
       // \Description:

@@ -1,16 +1,15 @@
-#include <math>
+ #include <math>
 
 #include "Piece.hpp"
 
 using namespace Piece_n;
 
-// default constructor
-Piece_c::Piece_c()
+// constructor
+Piece_c::Piece_c(Player_c& player_owner) :
+   mPlayer(player_owner),
+   mPlayState(PlayState_e::RESERVE)
 {
-	
 }
-
-// constructor to build a Piece using a Player's ID??
 
 // default destructor
 Piece_c::~Piece_c()
@@ -22,6 +21,10 @@ std::pair<int, int> Piece_c::getPosition()
    if (mPosition)
    {
       return mPosition;
+   }
+   else 
+   {
+      // fire and error
    }
 }
 
@@ -53,7 +56,7 @@ void Piece_c::setPosition(const std::pair<int, int> new_position)
    }
 }
 
-bool Piece_c::isValidDeployment(std::pair<int, int> deploy_position)
+bool Piece_c::isValidDeployment(const std::pair<int, int>& deploy_position)
 {
    std::vector<std::pair<int, int>>::iterator it;
    for (it = mDeploymentZones.begin(); it != mDeploymentZones.end(); ++it)
@@ -67,7 +70,7 @@ bool Piece_c::isValidDeployment(std::pair<int, int> deploy_position)
    return false;
 }
 
-bool Piece_c::isValidMove(std::pair<int, int> move_position)
+bool Piece_c::isValidMove(const std::pair<int, int>& move_position)
 {
    if (abs(mPosition.first - move_position.first <= 1))
    {
