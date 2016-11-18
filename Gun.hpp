@@ -5,18 +5,16 @@
 
 namespace Piece_n
 {
-   static const std::vector<std::pair<int, int>> DEPLOYMENT_ZONES = {};
-
    class Gun_c : public Piece_c
    {
    public:
       // constructor
-      Gun_c(Player_c& player_owner);
+      Gun_c(); // Player_n::Player_c& player_owner);
 
       // default destructor
       ~Gun_c();
 
-      // \Name: s=getDirection
+      // \Name: getDirection
       // \Description:
       // - gets this Piece's direction
       // \Argument:

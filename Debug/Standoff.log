@@ -1,0 +1,64 @@
+﻿  Slinger.cpp
+  Player.cpp
+C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(655): error C2259: 'Piece_n::Piece_c': cannot instantiate abstract class
+  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(655): note: due to following members:
+  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(655): note: 'const Piece_n::Direction_e &Piece_n::Piece_c::getDirection(void)': is abstract
+  c:\users\will gueble\documents\homebrew gamedev projects\standoff\Piece.hpp(68): note: see declaration of 'Piece_n::Piece_c::getDirection'
+  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(655): note: 'void Piece_n::Piece_c::setDirection(const Piece_n::Direction_e &)': is abstract
+  c:\users\will gueble\documents\homebrew gamedev projects\standoff\Piece.hpp(77): note: see declaration of 'Piece_n::Piece_c::setDirection'
+  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(773): note: see reference to function template instantiation 'void std::allocator<_Ty>::construct<_Objty,Piece_n::Piece_c&>(_Objty *,Piece_n::Piece_c &)' being compiled
+          with
+          [
+              _Ty=Piece_n::Piece_c,
+              _Objty=Piece_n::Piece_c
+          ]
+  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(773): note: see reference to function template instantiation 'void std::allocator<_Ty>::construct<_Objty,Piece_n::Piece_c&>(_Objty *,Piece_n::Piece_c &)' being compiled
+          with
+          [
+              _Ty=Piece_n::Piece_c,
+              _Objty=Piece_n::Piece_c
+          ]
+  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(918): note: see reference to function template instantiation 'void std::allocator_traits<_Alloc>::construct<_Ty,Piece_n::Piece_c&>(std::allocator<_Ty> &,_Objty *,Piece_n::Piece_c &)' being compiled
+          with
+          [
+              _Alloc=std::allocator<Piece_n::Piece_c>,
+              _Ty=Piece_n::Piece_c,
+              _Objty=Piece_n::Piece_c
+          ]
+  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\xmemory0(917): note: see reference to function template instantiation 'void std::allocator_traits<_Alloc>::construct<_Ty,Piece_n::Piece_c&>(std::allocator<_Ty> &,_Objty *,Piece_n::Piece_c &)' being compiled
+          with
+          [
+              _Alloc=std::allocator<Piece_n::Piece_c>,
+              _Ty=Piece_n::Piece_c,
+              _Objty=Piece_n::Piece_c
+          ]
+  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector(1282): note: see reference to function template instantiation 'void std::_Wrap_alloc<std::allocator<_Ty>>::construct<Piece_n::Piece_c,Piece_n::Piece_c&>(_Ty *,Piece_n::Piece_c &)' being compiled
+          with
+          [
+              _Ty=Piece_n::Piece_c
+          ]
+  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector(1281): note: see reference to function template instantiation 'void std::_Wrap_alloc<std::allocator<_Ty>>::construct<Piece_n::Piece_c,Piece_n::Piece_c&>(_Ty *,Piece_n::Piece_c &)' being compiled
+          with
+          [
+              _Ty=Piece_n::Piece_c
+          ]
+  C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\include\vector(1274): note: while compiling class template member function 'void std::vector<Piece_n::Piece_c,std::allocator<_Ty>>::push_back(const Piece_n::Piece_c &)'
+          with
+          [
+              _Ty=Piece_n::Piece_c
+          ]
+  Player.cpp(32): note: see reference to function template instantiation 'void std::vector<Piece_n::Piece_c,std::allocator<_Ty>>::push_back(const Piece_n::Piece_c &)' being compiled
+          with
+          [
+              _Ty=Piece_n::Piece_c
+          ]
+  c:\users\will gueble\documents\homebrew gamedev projects\standoff\Player.hpp(106): note: see reference to class template instantiation 'std::vector<Piece_n::Piece_c,std::allocator<_Ty>>' being compiled
+          with
+          [
+              _Ty=Piece_n::Piece_c
+          ]
+  Piece.cpp
+  Pawn.cpp
+  Gun.cpp
+  Game.cpp
+  Generating Code...

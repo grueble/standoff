@@ -5,17 +5,25 @@
 
 namespace Piece_n
 {
-   static const std::vector<std::pair<int, int>> DEPLOYMENT_ZONES = {};
+   static const Direction_e PAWN_DIRECTION = Direction_e::NONE;
 
    class Pawn_c : public Piece_c
    {
+   public:
       // default constructur
-      Pawn_c(Player_c& player_owner);
+      Pawn_c(); // Player_n::Player_c& player_owner);
 
       // default destructor
       ~Pawn_c();
 
-      // getSprite function to load an image for drawing
+      // \Name: getDirection
+      // \Description:
+      // - gets this Piece's direction
+      // \Argument:
+      // - none
+      // \Returns
+      // - Direction_e&, this Piece's direction member field
+      const Direction_e& getDirection();
 
       // \Name: setDirection
       // \Description:

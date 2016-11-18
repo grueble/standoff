@@ -5,31 +5,29 @@
 
 namespace Piece_n
 {
-   static const std::vector<std::pair<int, int>> DEPLOYMENT_ZONES = {};
-
-   class Slinger_c : public Piece-c
+   class Slinger_c : public Piece_c
    {
    public:
       // constructor
-      Slinger_c(Player_c& player_owner);
+      Slinger_c(); //Player_n::Player_c& player_owner);
 
       // default destructor
       ~Slinger_c();
 
-      // \Name: s=getDirection
+      // \Name: getDirection
       // \Description:
       // - gets this Piece's direction
       // \Argument:
       // - none
       // \Returns
-      // - Direction_e&, this Piece's direction member field
-      const Direction_e& getDirection()
+      // - Direction_e&, this Piece's primary direction member field
+      const Direction_e& getDirection();
 
       // \Name: setDirection
       // \Description:
       // - sets the mDirection member field
       // \Argument:
-      // - Direction_e, the new direction to set
+      // - Direction_e, the new primary direction to set
       // \Returns
       // - none
       void setDirection(const Direction_e& new_direction);

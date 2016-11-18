@@ -1,19 +1,26 @@
 #ifndef _PIECE_HPP_
 #define _PIECE_HPP_
 
-#include <pair>
+#include <vector>
+#include <utility>
 
-#include "Player.hpp"
+// #include "Player.hpp"
 
 namespace Piece_n
 {
+   // deployment zone vectors used in piece subtype initialization
+   static const std::vector<std::pair<int, int>> PAWN_DEPLOYMENT_ZONES = {};
+   static const std::vector<std::pair<int, int>> GUN_DEPLOYMENT_ZONES = {};
+   static const std::vector<std::pair<int, int>> SLINGER_DEPLOYMENT_ZONES = {};
+
    // the possible directions a piece could be facing
    enum Direction_e
    {
       UP = 0,
       RIGHT = 1,
       DOWN = 2,
-      LEFT = 3
+      LEFT = 3,
+      NONE = 4
    };
 
    // the in-play status for any particular piece
@@ -21,14 +28,14 @@ namespace Piece_n
    {
       RESERVE = 0,
       LIVE = 1,
-      DEAD = 2
+      DEAD = 2,
    };
 
    class Piece_c
    {
    public:
       // constructor
-      Piece_c(Player_c& player_owner);
+      Piece_c(); //Player_n::Player_c& player_owner);
 
       // default destructor
       ~Piece_c();
@@ -49,7 +56,7 @@ namespace Piece_n
       // - std::pair<int, int>, the new position to set
       // \Returns
       // - none
-      void setPosition(std::pair<int, int> const& new_position);
+      void setPosition(const std::pair<int, int>& new_position);
 
       // \Name: getDirection
       // \Description:
@@ -60,7 +67,6 @@ namespace Piece_n
       // - Direction_e, this Piece's direction
       const virtual Direction_e& getDirection() = 0;
 
-      // May remove this, only guns and slinger have direction
       // \Name: setDirection
       // \Description:
       // - sets the mDirection member field
@@ -69,6 +75,24 @@ namespace Piece_n
       // \Returns
       // - none 
       virtual void setDirection(const Direction_e& new_direction) = 0;
+
+      // \Name: getPlayState
+      // \Description:
+      // - returns the mPlayerState member field
+      // \Argument:
+      // - none
+      // \Returns
+      // - PlayState_e, this Piece's play state
+      const PlayState_e& getPlayState();
+
+      // \Name: nextPlayState
+      // \Description:
+      // - sets the mPlayState member field to the next legal play state
+      // \Argument:
+      // - none
+      // \Returns
+      // - none
+      void nextPlayState();
 
       // \Name: isValidDeployment
       // \Description:
@@ -90,7 +114,7 @@ namespace Piece_n
 
    protected:
       // reference to the Player that owns this Piece
-      Player_c &mPlayer;
+      // Player_n::Player_c &mPlayer;
 
       // this Piece's current board position, or null if it is not currently in play
       std::pair<int, int> mPosition;

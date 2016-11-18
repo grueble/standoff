@@ -1,57 +1,76 @@
- #include <math>
+#include <cmath>
 
 #include "Piece.hpp"
 
 using namespace Piece_n;
 
-// constructor
-Piece_c::Piece_c(Player_c& player_owner) :
-   mPlayer(player_owner),
+Piece_c::Piece_c() : // Player_n::Player_c& player_owner) :
+   // mPlayer(player_owner),
+   mPosition(std::make_pair(-1, -1)),
    mPlayState(PlayState_e::RESERVE)
 {
 }
 
-// default destructor
 Piece_c::~Piece_c()
 {
 }
 
-std::pair<int, int> Piece_c::getPosition()
+const std::pair<int, int>& Piece_c::getPosition()
 {
-   if (mPosition)
-   {
-      return mPosition;
-   }
-   else 
-   {
-      // fire and error
-   }
+   return mPosition;
 }
 
-void Piece_c::setPosition(const std::pair<int, int> new_position)
+void Piece_c::setPosition(const std::pair<int, int>& new_position)
 {
-   if (!mPosition)
+   if (mPosition.first != -1 || mPosition.second != -1)
    {
-      if (this.isValidDeployment(new_position))
+      if (this->isValidDeployment(new_position))
       {
          mPosition = new_position;
       }
       else 
       {
-         // In an app implementation, this will be a warning UI pop-up
-         std::cout << "Invalid Deployment" << std::endl;
+         // invalid deployment
       }
    }
    else 
    {
-      if (this.isValidMove(new_position))
+      if (this->isValidMove(new_position))
       {
          mPosition = new_position;
       }
       else
       {
-         // In an app implementation, this will be a warning UI pop-up
-         std::cout << "Invalid Move" << std::endl;
+         // invalid move
+      }
+   }
+}
+
+const PlayState_e& Piece_c::getPlayState()
+{
+   return mPlayState;
+}
+
+void Piece_c::nextPlayState()
+{
+   switch (this->getPlayState())
+   {
+      case PlayState_e::RESERVE:
+      {
+         mPlayState = PlayState_e::LIVE;
+         break;
+      }
+      case PlayState_e::LIVE:
+      {
+         mPlayState = PlayState_e::DEAD;
+         break;
+      }
+
+      // no case for PlayState_e::DEAD; there is no next legal play state
+
+      default:
+      {
+         break;
       }
    }
 }

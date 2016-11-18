@@ -6,54 +6,91 @@ static const int NUM_SLINGERS = 2;
 
 using namespace Player_n;
 
-// Constructor
-Player_c::Player_c()
+Player_c::Player_c(const int& user_id) :
+   mUserId(user_id)
 {
-   init_pieces();
+   initPieces();
 }
 
-// Destructor
 Player_c::~Player_c()
 {
 }
 
-// GetReservePieces
-std::vector<Piece>& Player_c::getReservePieces()
+std::vector<Piece_n::Piece_c>& Player_c::getPieces()
 {
-   return mReservePieces;
+   return mPieces;
 }
 
-// GetLivePieces
-std::vector<Piece>& Player_c::getLivePieces()
+std::vector<Piece_n::Piece_c>& Player_c::getReservePieces()
 {
-   return mLivePieces;
+   std::vector<Piece_n::Piece_c> reserve_pieces;
+   std::vector<Piece_n::Piece_c>::iterator it;
+   for(it = this->getPieces().begin(); it != this->getPieces().end(); ++it)
+   {
+      if (it->getPlayState() == Piece_n::PlayState_e::RESERVE)
+      {
+         reserve_pieces.push_back(*it);
+      }
+   }
+   return reserve_pieces;
 }
 
-// GetDeadPieces
-std::vector<Piece>& Player_c::getDeadPieces()
+std::vector<Piece_n::Piece_c>& Player_c::getLivePieces()
 {
-   return mDeadPieces;
+   std::vector<Piece_n::Piece_c> live_pieces;
+   std::vector<Piece_n::Piece_c>::iterator it;
+   for(it = this->getPieces().begin(); it != this->getPieces().end(); ++it)
+   {
+      if (it->getPlayState() == Piece_n::PlayState_e::RESERVE)
+      {
+         live_pieces.push_back(*it);
+      }
+   }
+   return live_pieces;
 }
 
-void deploy(Piece_c& reserve_piece, const std::pair<int, int>& deploy_position)
+std::vector<Piece_n::Piece_c>& Player_c::getDeadPieces()
 {
-   if (reserve_piece.mPlayStatus == Piece_n::RESERVE)
+   std::vector<Piece_n::Piece_c> dead_pieces;
+   std::vector<Piece_n::Piece_c>::iterator it;
+   for(it = this->getPieces().begin(); it != this->getPieces().end(); ++it)
+   {
+      if (it->getPlayState() == Piece_n::PlayState_e::RESERVE)
+      {
+         dead_pieces.push_back(*it);
+      }
+   }
+   return dead_pieces;
+}
+
+void deploy(Piece_n::Piece_c& reserve_piece, const std::pair<int, int>& deploy_position)
+{
+   if (reserve_piece.getPlayState() == Piece_n::RESERVE)
    {
       reserve_piece.setPosition(deploy_position);
+      reserve_piece.nextPlayState();
+   }
+   else
+   {
+      // fire an error
    }
 }
 
-void move(Piece_c& live_piece, const std::pair<int, int>& move_position)
+void move(Piece_n::Piece_c& live_piece, const std::pair<int, int>& move_position)
 {
-   if (live_piece.mPlayStatus == Piece_n::LIVE)
+   if (live_piece.getPlayState() == Piece_n::LIVE)
    {
       live_piece.setPosition(move_position);
    }
+   else
+   {
+      // fire an error
+   }
 }
 
-void rotate(Piece_c& live_piece, const Piece_n::Direction_e& rotate_direction)
+void rotate(Piece_n::Piece_c& live_piece, const Piece_n::Direction_e& rotate_direction)
 {
-   if (live_piece.mPlayStatus == Piece_n::LIVE)
+   if (live_piece.getPlayState() == Piece_n::LIVE)
    {
       live_piece.setDirection(rotate_direction);
    }
@@ -61,7 +98,7 @@ void rotate(Piece_c& live_piece, const Piece_n::Direction_e& rotate_direction)
 
 void Player_c::initShootout()
 {
-   mGame.shootout();
+   // mGame.shootout();
 }
 
 void Player_c::initPieces()
@@ -69,21 +106,21 @@ void Player_c::initPieces()
    // add pawns
    for (int i = 0; i < NUM_PAWNS; ++i)
    {
-      Pawn new_pawn = new Pawn(*this);
-      mPieces.push_back(new_pawn);
+      Piece_n::Pawn_c* new_pawn = new Piece_n::Pawn_c();
+      mPieces.push_back(*new_pawn);
    }
 
    // add guns
    for (int i = 0; i < NUM_GUNS; ++i)
    {
-      Gun new_gun = new Gun(*this); 
-      mPieces.push_back(new_gun);
+      Piece_n::Gun_c* new_gun = new Piece_n::Gun_c(); 
+      mPieces.push_back(*new_gun);
    }
 
    // add slingers
    for (int i = 0; i < NUM_SLINGERS; ++i)
    {
-      Slinger new_slinger = new Slinger(*this);
-      mPieces.push_back(new_slinger);
+      Piece_n::Slinger_c* new_slinger = new Piece_n::Slinger_c();
+      mPieces.push_back(*new_slinger);
    }
 }

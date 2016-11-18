@@ -3,7 +3,6 @@
 
 #include <map>
 
-#include "User.hpp"
 #include "Player.hpp"
 
 namespace Game_n
@@ -42,7 +41,7 @@ namespace Game_n
       // - int, the user's ID to search for
       // \Returns
       // - const User_c&, a reference to the user whose ID was passed
-      const User_c& findUserById(int id);
+      // const User_c& findUserById(int id);
 
       // \Name: drawReservePieces
       // \Description:
@@ -81,8 +80,8 @@ namespace Game_n
       bool gameOver();
 
       // Store the two Player_c objects created to handle game events
-      Player_c& mPlayer1;
-      Player_c& mPlayer2;
+      Player_n::Player_c& mPlayer1;
+      Player_n::Player_c& mPlayer2;
 
       // a map that matches a string representation of an int key to a user's ID
       std::map<char, int> mUserIds;

@@ -3,19 +3,31 @@
 
 #include <vector>
 
-#include "Game.hpp"
+// #include "Game.hpp"
 #include "Piece.hpp"
+#include "Pawn.hpp"
+#include "Gun.hpp"
+#include "Slinger.hpp"
 
 namespace Player_n
 {
    class Player_c
    {
    public:
-      // default constructor
-      Player_c();
+      // constructor
+      Player_c(const int& user_id);
 
       // default destructor
       ~Player_c();
+
+      // \Name: getPieces
+      // \Description:
+      // - returns a vector of this player's pieces
+      // \Argument:
+      // - none
+      // \Returns
+      // - std::vector<Piece_c>&, the address of this player's reserve pieces
+      std::vector<Piece_n::Piece_c>& getPieces();
 
       // \Name: getReservePieces
       // \Description:
@@ -23,8 +35,8 @@ namespace Player_n
       // \Argument:
       // - none
       // \Returns
-      // - std::vector<Piece>&, the address of this player's reserve pieces
-      std::vector<Piece>& getReservePieces();
+      // - std::vector<Piece_c>&, the address of this player's reserve pieces
+      std::vector<Piece_n::Piece_c>& getReservePieces();
 
       // \Name: getLivePieces
       // \Description:
@@ -32,8 +44,8 @@ namespace Player_n
       // \Argument:
       // - none
       // \Returns
-      // - std::vector<Piece>&, the address of this player's live pieces
-      std::vector<Piece>& getLivePieces();
+      // - std::vector<Piece_c>&, the address of this player's live pieces
+      std::vector<Piece_n::Piece_c>& getLivePieces();
 
       // \Name: getDeadPieces
       // \Description:
@@ -41,8 +53,8 @@ namespace Player_n
       // \Argument:
       // - none
       // \Returns
-      // - std::vector<Piece>&, the address of this player's dead pieces
-      std::vector<Piece>& getDeadPieces();
+      // - std::vector<Piece_c>&, the address of this player's dead pieces
+      std::vector<Piece_n::Piece_c>& getDeadPieces();
 
       // \Name: deploy
       // \Description:
@@ -51,7 +63,7 @@ namespace Player_n
       // - none
       // \Returns
       // - bool, true if the deployment is successful, false o/w
-      bool deploy(Piece_c& reserve_piece, const std::pair<int, int>& deploy_position);
+      bool deploy(Piece_n::Piece_c& reserve_piece, const std::pair<int, int>& deploy_position);
 
       // \Name: move
       // \Description:
@@ -60,7 +72,7 @@ namespace Player_n
       // - none
       // \Returns
       // - bool, true if the move is successful, false o/w
-      bool move(Piece_c& live_piece, const std::pair<int, int>& move_position);
+      bool move(Piece_n::Piece_c& live_piece, const std::pair<int, int>& move_position);
 
       // \Name: rotate
       // \Description:
@@ -69,7 +81,7 @@ namespace Player_n
       // - none
       // \Returns
       // - bool, true if the rotation is successful, false o/w
-      bool rotate(Piece_c& live_piece, const Piece_n::Direction_e& rotate_direction);
+      bool rotate(Piece_n::Piece_c& live_piece, const Piece_n::Direction_e& rotate_direction);
 
       // \Name: initShootout
       // \Description:
@@ -90,14 +102,14 @@ namespace Player_n
       // - none
       void initPieces();
 
-      // piece vectors
-      std::vector<Piece_c> mPieces;
+      // piece vector
+      std::vector<Piece_n::Piece_c> mPieces;
 
       // ID of the user that controls this Player
-      const int userId;
+      const int mUserId;
 
       // game object that owns this Player
-      Game_c& mGame;
+      // Game_n::Game_c& mGame;
    };
 }
 
