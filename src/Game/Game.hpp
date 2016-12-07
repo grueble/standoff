@@ -4,6 +4,7 @@
 #include <map>
 
 #include "Player.hpp"
+#include "ResourceManager/ResourceManager.hpp"
 
 namespace Game_n
 {
@@ -11,7 +12,7 @@ namespace Game_n
    {
    public:
       // constructor
-      Game_c(int first_user_id, int second_user_id);
+      Game_c(const ResourceManager_n::ResourceManager_c& resource_manager);
 
       // default destructor
       ~Game_c();

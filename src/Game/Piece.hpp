@@ -8,10 +8,13 @@
 
 namespace Piece_n
 {
-   // deployment zone vectors used in piece subtype initialization
-   static const std::vector<std::pair<int, int>> PAWN_DEPLOYMENT_ZONES = {};
-   static const std::vector<std::pair<int, int>> GUN_DEPLOYMENT_ZONES = {};
-   static const std::vector<std::pair<int, int>> SLINGER_DEPLOYMENT_ZONES = {};
+   // the possible types of pieces
+   enum PieceType_e
+   {
+      PAWN = 0,
+      GUN = 1,
+      SLINGER = 0
+   };
 
    // the possible directions a piece could be facing
    enum Direction_e
@@ -35,10 +38,23 @@ namespace Piece_n
    {
    public:
       // constructor
-      Piece_c(); //Player_n::Player_c& player_owner);
+      // \Parameters:
+      // - Piecetype_e& the type of Piece to create
+      // - std::vector<std::pair<int, int>>& a list of valid deployments for this Piece
+      Piece_c(const PieceType_e& piece_type, 
+              const std::vector<std::pair<int, int>>& deployment_zones); 
 
       // default destructor
       ~Piece_c();
+
+      // \Name: getPiece_type
+      // \Description:
+      // - returns the mPieceType member field
+      // \Argument:
+      // - none
+      // \Returns
+      // - PieceType_& this Piece's type
+      const PieceType_e& getPieceType();
 
       // \Name: getPosition
       // \Description:
@@ -65,7 +81,7 @@ namespace Piece_n
       // - none
       // \Returns
       // - Direction_e, this Piece's direction
-      const virtual Direction_e& getDirection() = 0;
+      const Direction_e& getDirection();
 
       // \Name: setDirection
       // \Description:
@@ -74,7 +90,7 @@ namespace Piece_n
       // - Direction_e, the new direction to set
       // \Returns
       // - none 
-      virtual void setDirection(const Direction_e& new_direction) = 0;
+      void setDirection(const Direction_e& new_direction);
 
       // \Name: getPlayState
       // \Description:
@@ -113,14 +129,19 @@ namespace Piece_n
       bool isValidMove(const std::pair<int, int>& move_position);
 
    protected:
-      // reference to the Player that owns this Piece
-      // Player_n::Player_c &mPlayer;
+      // this Piece's type
+      PieceType_e mPieceType;
 
       // this Piece's current board position, or null if it is not currently in play
       std::pair<int, int> mPosition;
 
+      // the direction this Piece is currently facing
+      // -> always NONE for PieceType_e::PAWN
+      // -> represents 'primary' direction for Piece_Type::SLINGER
+      Direction_e mDirection;
+
       // stores a Piece's available deployment zones
-      // -> these are initialized differently based on Piece type
+      // -> these are initialized differently based on PieceType
       std::vector<std::pair<int, int>> mDeploymentZones;
 
       // this Piece's current in-play status

@@ -4,15 +4,23 @@
 
 using namespace Piece_n;
 
-Piece_c::Piece_c() : // Player_n::Player_c& player_owner) :
-   // mPlayer(player_owner),
+Piece_c::Piece_c(const PieceType_e& piece_type, 
+                 const std::vector<std::pair<int, int>>& deployment_zones) :
+   //mPieceType(piece_type),
    mPosition(std::make_pair(-1, -1)),
+   mDirection(Direction_e::NONE),
+   mDeploymentZones(deployment_zones),
    mPlayState(PlayState_e::RESERVE)
 {
 }
 
 Piece_c::~Piece_c()
 {
+}
+
+const PieceType_e& Piece_c::getPieceType()
+{
+   return mPieceType;
 }
 
 const std::pair<int, int>& Piece_c::getPosition()
@@ -43,6 +51,19 @@ void Piece_c::setPosition(const std::pair<int, int>& new_position)
       {
          // invalid move
       }
+   }
+}
+
+const Direction_e& Piece_c::getDirection()
+{
+   return mDirection;
+}
+
+void Piece_c::setDirection(const Direction_e& new_direction)
+{
+   if (mDirection != new_direction)
+   {
+      mDirection = new_direction;
    }
 }
 

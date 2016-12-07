@@ -3,14 +3,15 @@
 
 #include <vector>
 
-// #include "Game.hpp"
 #include "Piece.hpp"
-#include "Pawn.hpp"
-#include "Gun.hpp"
-#include "Slinger.hpp"
 
 namespace Player_n
 {
+   // deployment zone vectors used in piece subtype initialization
+   static const std::vector<std::pair<int, int>> PAWN_DEPLOYMENT_ZONES = {};
+   static const std::vector<std::pair<int, int>> GUN_DEPLOYMENT_ZONES = {};
+   static const std::vector<std::pair<int, int>> SLINGER_DEPLOYMENT_ZONES = {};
+
    class Player_c
    {
    public:

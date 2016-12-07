@@ -14,6 +14,7 @@ Player_c::Player_c(const int& user_id) :
 
 Player_c::~Player_c()
 {
+   // free up the Piece container
 }
 
 std::vector<Piece_n::Piece_c>& Player_c::getPieces()
@@ -69,6 +70,8 @@ void deploy(Piece_n::Piece_c& reserve_piece, const std::pair<int, int>& deploy_p
    {
       reserve_piece.setPosition(deploy_position);
       reserve_piece.nextPlayState();
+
+      // set direction to default for a particular deployment
    }
    else
    {
@@ -92,7 +95,10 @@ void rotate(Piece_n::Piece_c& live_piece, const Piece_n::Direction_e& rotate_dir
 {
    if (live_piece.getPlayState() == Piece_n::LIVE)
    {
-      live_piece.setDirection(rotate_direction);
+      if (live_piece.getPieceType() != Piece_n::PAWN)
+      {
+         live_piece.setDirection(rotate_direction);
+      }
    }
 }
 
@@ -106,21 +112,21 @@ void Player_c::initPieces()
    // add pawns
    for (int i = 0; i < NUM_PAWNS; ++i)
    {
-      Piece_n::Pawn_c* new_pawn = new Piece_n::Pawn_c();
+      Piece_n::Piece_c* new_pawn = new Piece_n::Piece_c(Piece_n::PAWN, PAWN_DEPLOYMENT_ZONES);
       mPieces.push_back(*new_pawn);
    }
 
    // add guns
    for (int i = 0; i < NUM_GUNS; ++i)
    {
-      Piece_n::Gun_c* new_gun = new Piece_n::Gun_c(); 
+      Piece_n::Piece_c* new_gun = new Piece_n::Piece_c(Piece_n::GUN, GUN_DEPLOYMENT_ZONES);
       mPieces.push_back(*new_gun);
    }
 
    // add slingers
    for (int i = 0; i < NUM_SLINGERS; ++i)
    {
-      Piece_n::Slinger_c* new_slinger = new Piece_n::Slinger_c();
+      Piece_n::Piece_c* new_slinger = new Piece_n::Piece_c(Piece_n::SLINGER, SLINGER_DEPLOYMENT_ZONES);
       mPieces.push_back(*new_slinger);
    }
 }
