@@ -4,7 +4,7 @@
 #include <cstdio>
 #include "StandoffApp/StandoffApp.hpp"
 
-int main(int argc, char **argv)
+int main(int argc, char* argv[])
 {
    // the game instance
    StandoffApp_n::StandoffApp_c standoff_app;
@@ -21,7 +21,7 @@ int main(int argc, char **argv)
       }
       else 
       {
-         bool exit_reason = standoff_app.run();
+         int exit_reason = standoff_app.run();
       }
    }
 

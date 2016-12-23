@@ -4,12 +4,12 @@
 
 using namespace Piece_n;
 
-Piece_c::Piece_c(const PieceType_e& piece_type, 
-                 const std::vector<std::pair<int, int>>& deployment_zones) :
+Piece_c::Piece_c(const PieceType_e& piece_type) : 
+                 // const std::vector<std::pair<int, int>>& deployment_zones) :
    //mPieceType(piece_type),
    mPosition(std::make_pair(-1, -1)),
    mDirection(Direction_e::NONE),
-   mDeploymentZones(deployment_zones),
+   // mDeploymentZones(deployment_zones),
    mPlayState(PlayState_e::RESERVE)
 {
 }
@@ -28,28 +28,41 @@ const std::pair<int, int>& Piece_c::getPosition()
    return mPosition;
 }
 
-void Piece_c::setPosition(const std::pair<int, int>& new_position)
+void Piece_c::setPosition(const int& new_position_x, const int& new_position_y) 
 {
-   if (mPosition.first != -1 || mPosition.second != -1)
+   switch (mPlayState)
    {
-      if (this->isValidDeployment(new_position))
+      case RESERVE :
       {
-         mPosition = new_position;
+         if (this->isValidDeployment(new_position))
+         {
+            mPosition = new_position;
+         }
+         else 
+         {
+            // invalid deployment
+         }  
+         break;
       }
-      else 
+      case LIVE :
       {
-         // invalid deployment
+         if (this->isValidMove(new_position))
+         {
+            mPosition = new_position;
+         }
+         else
+         {
+            // invalid move
+         }  
+         break;
       }
-   }
-   else 
-   {
-      if (this->isValidMove(new_position))
+
+      // no case for PlayState_e::DEAD; cannot set the position of a dead piece
+
+      default :
       {
-         mPosition = new_position;
-      }
-      else
-      {
-         // invalid move
+         // unrecognized PlayState_e
+         break;
       }
    }
 }
@@ -74,34 +87,35 @@ const PlayState_e& Piece_c::getPlayState()
 
 void Piece_c::nextPlayState()
 {
-   switch (this->getPlayState())
+   switch (mPlayState)
    {
-      case PlayState_e::RESERVE:
+      case RESERVE :
       {
-         mPlayState = PlayState_e::LIVE;
+         mPlayState = LIVE;
          break;
       }
-      case PlayState_e::LIVE:
+      case LIVE :
       {
-         mPlayState = PlayState_e::DEAD;
+         mPlayState = DEAD;
          break;
       }
 
-      // no case for PlayState_e::DEAD; there is no next legal play state
+      // no case for PlayState_e::DEAD; there is no legal next play state
 
-      default:
+      default :
       {
+         // unrecognized PlayState_e
          break;
       }
    }
 }
 
-bool Piece_c::isValidDeployment(const std::pair<int, int>& deploy_position)
+bool Piece_c::isValidDeployment(const int& deploy_x, const int& deploy_y)
 {
    std::vector<std::pair<int, int>>::iterator it;
    for (it = mDeploymentZones.begin(); it != mDeploymentZones.end(); ++it)
    {
-      if (*it == deploy_position)
+      if (it->x == deploy_x && it->y == deploy_y)
       {
          return true;
       }
@@ -110,11 +124,11 @@ bool Piece_c::isValidDeployment(const std::pair<int, int>& deploy_position)
    return false;
 }
 
-bool Piece_c::isValidMove(const std::pair<int, int>& move_position)
+bool Piece_c::isValidMove(const int& move_x, const int& move_y)
 {
-   if (abs(mPosition.first - move_position.first <= 1))
+   if (abs(mPosition.first - move_x <= 1))
    {
-      if (abs(mPosition.second - move_position.second <= 1))
+      if (abs(mPosition.second - move_y <= 1))
       {
          return true;
       }

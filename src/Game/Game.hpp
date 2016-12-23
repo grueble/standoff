@@ -26,6 +26,18 @@ namespace Game_n
       // - none
       void start();
 
+      // \Name: move
+      // \Description:
+      // - moves a piece
+      // \Argument:
+      // - Player_c&, the player moving the piece
+      // - Piece_c&, the piece to move
+      // - int, the x coordinate of the move position
+      // - int, the y coordinate of the move position
+      // \Returns
+      // - none
+      // void move(Player_n::Player_c& player, Piece_n::Piece_c& piece, int move_x, int move_y);
+
       // \Name: shootout
       // \Description:
       // - initiates a shootout event for both players
@@ -34,6 +46,26 @@ namespace Game_n
       // \Returns
       // - none
       void shootout();
+
+      // \Name: currentPlayer
+      // \Description:
+      // - returns the player whose turn it is
+      // \Argument:
+      // - none
+      // \Returns
+      // - Player_c&, the player whose turn it is
+      Player_n::Player_c& currentPlayer();
+
+      // \Name: nextPlayer
+      // \Description:
+      // - passes the turn to the player whose turn it is not
+      // \Argument:
+      // - none
+      // \Returns
+      // - Player_c&, the player the turn was passed to
+      Player_n::Player_c& nextPlayer();
+
+      handleLmbDown()
    protected:
       // \Name: findUserById
       // \Description:
@@ -44,6 +76,15 @@ namespace Game_n
       // - const User_c&, a reference to the user whose ID was passed
       // const User_c& findUserById(int id);
 
+      // \Name: drawPieces
+      // \Description:
+      // - draws the reserve Piece_c objects in their proper places
+      // \Argument:
+      // - none
+      // \Returns
+      // - none     
+      void drawPieces(); 
+
       // \Name: drawReservePieces
       // \Description:
       // - draws the reserve Piece_c objects in their proper places
@@ -51,7 +92,7 @@ namespace Game_n
       // - none
       // \Returns
       // - none
-      void drawReservePieces();
+      // void drawReservePieces();
 
       // \Name: drawLivePieces
       // \Description:
@@ -60,7 +101,7 @@ namespace Game_n
       // - none
       // \Returns
       // - none
-      void drawLivePieces();
+      // void drawLivePieces();
 
       // \Name: drawDeadPieces
       // \Description:
@@ -69,7 +110,7 @@ namespace Game_n
       // - none
       // \Returns
       // - none
-      void drawDeadPieces();
+      // void drawDeadPieces();
 
       // \Name: gameOver
       // \Description:
@@ -80,12 +121,12 @@ namespace Game_n
       // - bool, true if the current player is the winner
       bool gameOver();
 
-      // Store the two Player_c objects created to handle game events
+      // store the two Player_c objects created to handle game events
       Player_n::Player_c& mPlayer1;
       Player_n::Player_c& mPlayer2;
 
       // a map that matches a string representation of an int key to a user's ID
-      std::map<char, int> mUserIds;
+      // std::map<char, int> mUserIds;
 
       // may want to add a container for spectator IDs
       // std::map<char, int> mSpectatorIds;

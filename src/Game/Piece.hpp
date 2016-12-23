@@ -13,7 +13,7 @@ namespace Piece_n
    {
       PAWN = 0,
       GUN = 1,
-      SLINGER = 0
+      SLINGER = 2
    };
 
    // the possible directions a piece could be facing
@@ -41,8 +41,8 @@ namespace Piece_n
       // \Parameters:
       // - Piecetype_e& the type of Piece to create
       // - std::vector<std::pair<int, int>>& a list of valid deployments for this Piece
-      Piece_c(const PieceType_e& piece_type, 
-              const std::vector<std::pair<int, int>>& deployment_zones); 
+      Piece_c(const PieceType_e& piece_type); 
+              // const std::vector<std::pair<int, int>>& deployment_zones); 
 
       // default destructor
       ~Piece_c();
@@ -69,10 +69,11 @@ namespace Piece_n
       // \Description:
       // - sets the mPosition member field 
       // \Argument:
-      // - std::pair<int, int>, the new position to set
+      // - int&, the new position's x coordinate
+      // - int&, the new position's y coordinate
       // \Returns
-      // - none
-      void setPosition(const std::pair<int, int>& new_position);
+      // - bool, true on a success, false o/w
+      bool setPosition(const int& new_position_x, const int& new_position_y);
 
       // \Name: getDirection
       // \Description:
@@ -89,8 +90,8 @@ namespace Piece_n
       // \Argument:
       // - Direction_e, the new direction to set
       // \Returns
-      // - none 
-      void setDirection(const Direction_e& new_direction);
+      // - bool, true on a success, false o/w 
+      bool setDirection(const Direction_e& new_direction);
 
       // \Name: getPlayState
       // \Description:
@@ -114,25 +115,30 @@ namespace Piece_n
       // \Description:
       // - determines if the input deployment is valid
       // \Argument:
-      // - std::pair<int, int>, the deployment position to check
+      // - int&, the proposed deployment position's x coordinate
+      // - int&, the proposed deployment position's y coordinate
       // \Returns
       // - bool, true if the deployment is valid; false o/w
-      bool isValidDeployment(const std::pair<int, int>& deploy_position);
+      bool isValidDeployment(const int& deploy_x, const int& deploy_y);
 
       // \Name: isValidMove
       // \Description:
       // - returns the address of this player's reserve pieces
       // \Argument:
-      // - std::pair<int, int>, the move position to check
+      // - int&, the proposed move position's x coordinate
+      // - int&, the proposed move position's y coordinate
       // \Returns
       // - bool, true if the move is valid; false o/w
-      bool isValidMove(const std::pair<int, int>& move_position);
+      bool isValidMove(const int& move_x, const int& move_y);
 
-   protected:
+   private:
       // this Piece's type
       PieceType_e mPieceType;
 
-      // this Piece's current board position, or null if it is not currently in play
+      // this Piece's current position on screen 
+      // -> NULL on initialization
+      // -> position is based on abstract screen "tiles"
+      // -> set by Game_c according to owning Player_c's position relative to the board
       std::pair<int, int> mPosition;
 
       // the direction this Piece is currently facing
@@ -142,7 +148,7 @@ namespace Piece_n
 
       // stores a Piece's available deployment zones
       // -> these are initialized differently based on PieceType
-      std::vector<std::pair<int, int>> mDeploymentZones;
+      // std::vector<std::pair<int, int>> mDeploymentZones;
 
       // this Piece's current in-play status
       PlayState_e mPlayState;

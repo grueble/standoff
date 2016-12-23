@@ -2,21 +2,31 @@
 #define _STANDOFF_APP_HPP_
 
 #include <SDL.h>
-#undef _main
+#include <utility>
 #include "Game/Game.hpp"
 #include "ResourceManager/ResourceManager.hpp"
 
 namespace StandoffApp_n
 {
-   //Screen dimension constants
-   static const int SCREEN_WIDTH = 600;
-   static const int SCREEN_HEIGHT = 840;
-
-   // the board's upper left hand corner
-   static const std::pair<int,int> BOARD_COORD = std::pair(60, 240); 
-   
    // the width of (both) the border tiles (and the margin)
    static const int TILE_WIDTH = 60; 
+
+   /* 
+    * NOTE: to transform a "screen tile" point into a window 
+    * point (in pixels), multiply the coordinate's  x and y 
+    * values by TILE_WIDTH
+    */
+
+   // screen dimension constants
+   static const int SCREEN_WIDTH = TILE_WIDTH * 11;
+   static const int SCREEN_HEIGHT = TILE_WIDTH * 17;
+
+   // the board's upper left hand corner in "screen tile" coordinates
+   // -> the window's upper left hand corner is at (0, 0)
+   static const std::pair<int,int> BOARD_COORD = std::make_pair(1, 4); 
+
+   // the board's side length
+   static const int BOARD_SIDE_LENGTH = 9;
 
    class StandoffApp_c
    {
@@ -25,7 +35,7 @@ namespace StandoffApp_n
       StandoffApp_c();
 
       // default destructor
-      ~StandoffApp();
+      ~StandoffApp_c();
 
       // \Name: init
       // \Description:
@@ -52,7 +62,7 @@ namespace StandoffApp_n
       // - none
       // \Returns
       // - none
-      bool run();
+      int run();
 
       // \Name: close
       // \Description:
@@ -64,21 +74,56 @@ namespace StandoffApp_n
       void close();
 
    protected:
+      // \Name: handleLmbDown
+      // \Description:
+      // - handles an SDL_MOUSEBUTTONDOWN event (only for SDL_BUTTON_LEFT)
+      // \Argument:
+      // - const SDL_Event&, the event to handle 
+      // - Game_c&, the active game
+      // - Player_c&, address of the current player
+      // - Piece_c*, pointer to the current piece (can be NULL)
+      // \Returns
+      // - void
+      void handleLmbDown(const SDL_Event& e, 
+                         Game_n::Game_c& current_game,
+                         Player_n::Player_c& current player, 
+                         Piece_n::Piece_c* current_piece);
+
+      // \Name: handleKeyDown
+      // \Description:
+      // - handles an SDL_KEYDOWN event 
+      // \Argument:
+      // - const SDL_Event&, the event to handle 
+      // - Game_c&, the active game
+      // - Player_c&, address of the current player
+      // - Piece_c*, pointer to the current piece (can be NULL)
+      // \Returns
+      // - void
+      void handleKeyDown(const SDL_Event& e,
+                         Game_n::Game_c& current_game,
+                         Player_n::Player_c& current player, 
+                         Piece_n::Piece_c* current_piece););
+
+      // \Name: getImage
+      // \Description:
+      // - gets an image of the parameterized ImageType_e
+      // \Argument:
+      // - ImageType_e, the image to get
+      // \Returns
+      // - SDL_Texture*, pointer to the desired texture
+      SDL_Texture* getImage(ResourceManager_n::ImageType_e image_type);
+
       // the window to render to
       SDL_Window* gWindow = NULL;
 
       // the window renderer
       SDL_Renderer* gRenderer = NULL;
 
-      // stores the client's game instance
-      // -> can be changed to a container when multiple ongoing games are implemented
-      Game_c* mGame = NULL;
+      // the current displayed texture
+      SDL_Texture* gTexture = NULL;
 
       // bulk loads assets and manages them for the client
-      ResourceManager_c* mResourceManager;
-
-      // the cursor's on screen location
-      SDL_Rect* mCursor = NULL;
+      ResourceManager_n::ResourceManager_c* mResourceManager = NULL;
    };
 }
 

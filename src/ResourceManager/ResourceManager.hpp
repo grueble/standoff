@@ -2,9 +2,8 @@
 #define _RESOURCE_MANAGER_HPP_
 
 #include <SDL.h>
-#undef main
 #include <SDL_image.h>
-#include <stdio>
+#include <stdio.h>
 #include <map>
 #include <unordered_map>
 #include <string>
@@ -13,10 +12,6 @@
 
 namespace ResourceManager_n
 {
-   // configuration properties
-   static const std::string PATH_TO_ASSETS = "../assets/";
-   static const std::map<ImageType_e, std::string> IMAGES_PATHS = { {BOARD, "board.png"} };
-
    enum ImageType_e
    {
       BOARD,
@@ -29,6 +24,10 @@ namespace ResourceManager_n
       CURSOR,
       BRIEFCASE
    };
+
+   // configuration properties
+   static const std::string PATH_TO_ASSETS = "../assets/";
+   static const std::map<ImageType_e, std::string> IMAGE_PATHS = { {BOARD, "board.png"} };
 
    class ResourceManager_c
    {
@@ -48,7 +47,6 @@ namespace ResourceManager_n
       // - SDL_Texture*, pointer to the requested texture
       SDL_Texture* getTexture(ImageType_e image_type);
 
-   protected:
       // \Name: loadTextures
       // \Description:
       // - loads all required textures to memory
@@ -58,11 +56,13 @@ namespace ResourceManager_n
       // - bool, success or failure
       bool loadTextures();
 
+   protected:
       // the window renderer
       SDL_Renderer* gRenderer = NULL;
 
       // container mapping the loaded SDL_Textures to an indentifying enumeration
-      std::unordered_map<ImageType_e, SDL_Texture*> mTextures;
+      typedef std::unordered_map<ImageType_e, SDL_Texture*> TextureMap;
+      TextureMap mTextures;
    };
 }
 

@@ -16,7 +16,7 @@ namespace Player_n
    {
    public:
       // constructor
-      Player_c(const int& user_id);
+      Player_c(); // const int& user_id);
 
       // default destructor
       ~Player_c();
@@ -64,25 +64,28 @@ namespace Player_n
       // - none
       // \Returns
       // - bool, true if the deployment is successful, false o/w
-      bool deploy(Piece_n::Piece_c& reserve_piece, const std::pair<int, int>& deploy_position);
+      // bool deploy(Piece_n::Piece_c& piece, const std::pair<int, int>& deploy_position);
 
       // \Name: move
       // \Description:
       // - moves one of this Player's live pieces to a new position
       // \Argument:
-      // - none
+      // - Piece_c&, the piece to move
+      // - const int&, the piece's new x coordinate
+      // - const int&, the piece's new y coordinate
       // \Returns
       // - bool, true if the move is successful, false o/w
-      bool move(Piece_n::Piece_c& live_piece, const std::pair<int, int>& move_position);
+      bool move(Piece_n::Piece_c& piece, const int& x, const int& y); // std::pair<int, int>& move_position);
 
       // \Name: rotate
       // \Description:
       // - initiates a shootout event
       // \Argument:
-      // - none
+      // - Piece_c&, the piece to rotate
+      // - Direction
       // \Returns
       // - bool, true if the rotation is successful, false o/w
-      bool rotate(Piece_n::Piece_c& live_piece, const Piece_n::Direction_e& rotate_direction);
+      bool rotate(Piece_n::Piece_c& piece, const Piece_n::Direction_e& rotate_direction);
 
       // \Name: initShootout
       // \Description:
@@ -96,21 +99,27 @@ namespace Player_n
    protected:
       // \Name: initPieces
       // \Description:
-      // - initializes mReservePieces; called prior to game start
+      // - initializes mPieces; called prior to game start
       // \Argument:
       // - none
       // \Returns
       // - none
       void initPieces();
 
+      // \Name: destroyPieces
+      // \Description:
+      // - destroys the contensts of mPieces; called by the destructor
+      // \Argument:
+      // - none
+      // \Returns
+      // - none
+      void destroyPieces();
+
       // piece vector
       std::vector<Piece_n::Piece_c> mPieces;
 
       // ID of the user that controls this Player
       const int mUserId;
-
-      // game object that owns this Player
-      // Game_n::Game_c& mGame;
    };
 }
 

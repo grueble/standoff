@@ -6,7 +6,7 @@ ResourceManager_c::ResourceManager_c(SDL_Renderer* renderer)
 {
    gRenderer = renderer;
 
-   loadSurfaces();
+   loadTextures();
 }
 
 ResourceManager_c::~ResourceManager_c()
@@ -15,8 +15,8 @@ ResourceManager_c::~ResourceManager_c()
    std::unordered_map<ImageType_e, SDL_Texture*>::iterator it;
    for (it = mTextures.begin(); it != mTextures.end(); ++it)
    {
-      SDL_DestroyTexture(*it);
-      *it = NULL;
+      SDL_DestroyTexture(it->second);
+      it->second = NULL;
    }
 
    /* 
@@ -35,7 +35,8 @@ SDL_Texture* ResourceManager_c::getTexture(ImageType_e image_type)
 {
    // switch statement here to cover the different loaded images
 
-   return mTextures.find(image_type);
+   TextureMap::const_iterator it = mTextures.find(image_type);
+   return it->second;
 }
 
 bool ResourceManager_c::loadTextures()
@@ -56,7 +57,7 @@ bool ResourceManager_c::loadTextures()
    SDL_Texture* converted_texture = NULL;
 
    std::map<ImageType_e, std::string>::const_iterator it; 
-   for (it = IMAGE_PATHS.begin(); it != IMAGE_PATHS.end(); ++it)
+   for (it = ResourceManager_n::IMAGE_PATHS.begin(); it != ResourceManager_n::IMAGE_PATHS.end(); ++it)
    {
       std::string path_to_image = PATH_TO_ASSETS + it->second;
 
@@ -64,7 +65,7 @@ bool ResourceManager_c::loadTextures()
 
       if (loaded_surface == NULL)
       {
-         printf( "Unable to load image %s! SDL_image Error: %s\n", path.c_str(), IMG_GetError() );
+         printf( "Unable to load image %s! SDL_image Error: %s\n", path_to_image.c_str(), IMG_GetError() );
          success = false;
       }
       else 

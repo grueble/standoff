@@ -6,15 +6,15 @@ static const int NUM_SLINGERS = 2;
 
 using namespace Player_n;
 
-Player_c::Player_c(const int& user_id) :
-   mUserId(user_id)
+Player_c::Player_c() //const int& user_id) :
+   // mUserId(user_id)
 {
    initPieces();
 }
 
 Player_c::~Player_c()
 {
-   // free up the Piece container
+   destroyPieces();// free up the Piece container
 }
 
 std::vector<Piece_n::Piece_c>& Player_c::getPieces()
@@ -64,34 +64,69 @@ std::vector<Piece_n::Piece_c>& Player_c::getDeadPieces()
    return dead_pieces;
 }
 
-void deploy(Piece_n::Piece_c& reserve_piece, const std::pair<int, int>& deploy_position)
-{
-   if (reserve_piece.getPlayState() == Piece_n::RESERVE)
-   {
-      reserve_piece.setPosition(deploy_position);
-      reserve_piece.nextPlayState();
+// void deploy(Piece_n::Piece_c& reserve_piece, const std::pair<int, int>& deploy_position)
+// {
+//    if (reserve_piece.getPlayState() == Piece_n::RESERVE)
+//    {
+//       reserve_piece.setPosition(deploy_position);
+//       reserve_piece.nextPlayState();
 
-      // set direction to default for a particular deployment
-   }
-   else
+//       // set direction to default for a particular deployment
+//    }
+//    else
+//    {
+//       // fire an error
+//    }
+// }
+
+void move(Piece_n::Piece_c& piece, const int& move_x, const int& move_x) // const std::pair<int, int>& move_position)
+{
+   Piece_n::PieceType_e play_state = piece.getPlayState();
+
+   switch(play_state)
    {
-      // fire an error
+      case Piece_n::RESERVE :
+      {
+         if (piece.setPosition(make_pair(x, y)))
+         {
+            piece.nextPlayState();
+         }
+         else
+         {
+            // deploymenty failed
+         }
+      }
+      case Piece_n::LIVE :
+      {
+         if (!piece.setPosition(make_pair(x, y)))
+         {
+            // move failed
+         }
+      }
+      case Piece_n::DEAD :
+      {
+         // cannot move a dead piece, shouldn't ever come here
+      }
    }
+
+   // if (play_state == Piece_n::RESERVE)
+   // {
+   //    reserve_piece.setPosition(deploy_position);
+   //    reserve_piece.nextPlayState();
+
+   //    // set direction to default for a particular deployment
+   // }
+   // if (live_piece.getPlayState() == Piece_n::LIVE)
+   // {
+   //    live_piece.setPosition(move_position);
+   // }
+   // else
+   // {
+   //    // fire an error
+   // }
 }
 
-void move(Piece_n::Piece_c& live_piece, const std::pair<int, int>& move_position)
-{
-   if (live_piece.getPlayState() == Piece_n::LIVE)
-   {
-      live_piece.setPosition(move_position);
-   }
-   else
-   {
-      // fire an error
-   }
-}
-
-void rotate(Piece_n::Piece_c& live_piece, const Piece_n::Direction_e& rotate_direction)
+void rotate(Piece_n::Piece_c& piece, const Piece_n::Direction_e& rotate_direction)
 {
    if (live_piece.getPlayState() == Piece_n::LIVE)
    {
@@ -128,5 +163,14 @@ void Player_c::initPieces()
    {
       Piece_n::Piece_c* new_slinger = new Piece_n::Piece_c(Piece_n::SLINGER, SLINGER_DEPLOYMENT_ZONES);
       mPieces.push_back(*new_slinger);
+   }
+}
+
+void Player_c::destroyPieces()
+{
+   std::vector<Piece_n::Piece_c>::iterator it;
+   for (it = mPieces.begin(); it != mPieces.end(); ++it)
+   {
+      delete *it;
    }
 }
