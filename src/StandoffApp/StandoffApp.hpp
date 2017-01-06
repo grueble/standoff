@@ -84,10 +84,7 @@ namespace StandoffApp_n
       // - Piece_c*, pointer to the current piece (can be NULL)
       // \Returns
       // - void
-      void handleLmbDown(const SDL_Event& e, 
-                         Game_n::Game_c& current_game,
-                         Player_n::Player_c& current player, 
-                         Piece_n::Piece_c* current_piece);
+      void handleLmbDown(const SDL_Event& e, Game_n::Game_c& current_game);
 
       // \Name: handleKeyDown
       // \Description:
@@ -100,9 +97,7 @@ namespace StandoffApp_n
       // \Returns
       // - void
       void handleKeyDown(const SDL_Event& e,
-                         Game_n::Game_c& current_game,
-                         Player_n::Player_c& current player, 
-                         Piece_n::Piece_c* current_piece););
+                         Game_n::Game_c& current_game);
 
       // \Name: getImage
       // \Description:

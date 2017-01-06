@@ -4,8 +4,6 @@
 #include <vector>
 #include <utility>
 
-// #include "Player.hpp"
-
 namespace Piece_n
 {
    // the possible types of pieces
@@ -34,6 +32,13 @@ namespace Piece_n
       DEAD = 2,
    };
 
+   // the allegiance of a particular piece
+   enum Team_e
+   {
+      PINK = 0,
+      GREEN = 1
+   }
+
    class Piece_c
    {
    public:
@@ -42,7 +47,6 @@ namespace Piece_n
       // - Piecetype_e& the type of Piece to create
       // - std::vector<std::pair<int, int>>& a list of valid deployments for this Piece
       Piece_c(const PieceType_e& piece_type); 
-              // const std::vector<std::pair<int, int>>& deployment_zones); 
 
       // default destructor
       ~Piece_c();
@@ -137,7 +141,7 @@ namespace Piece_n
 
       // this Piece's current position on screen 
       // -> NULL on initialization
-      // -> position is based on abstract screen "tiles"
+      // -> position is based on abstract "screen tile" coordinates
       // -> set by Game_c according to owning Player_c's position relative to the board
       std::pair<int, int> mPosition;
 
@@ -148,10 +152,14 @@ namespace Piece_n
 
       // stores a Piece's available deployment zones
       // -> these are initialized differently based on PieceType
-      // std::vector<std::pair<int, int>> mDeploymentZones;
+      // -> reference to one of three shared deployment zone vectors in Game_c
+      std::vector<std::pair<int, int>>& mDeploymentZones;
 
       // this Piece's current in-play status
       PlayState_e mPlayState;
+
+      // this Piece's allegiance
+      Team_e mTeam;
    };
 }
 

@@ -57,15 +57,6 @@ namespace Player_n
       // - std::vector<Piece_c>&, the address of this player's dead pieces
       std::vector<Piece_n::Piece_c>& getDeadPieces();
 
-      // \Name: deploy
-      // \Description:
-      // - deploys a Piece from this Player's reserves
-      // \Argument:
-      // - none
-      // \Returns
-      // - bool, true if the deployment is successful, false o/w
-      // bool deploy(Piece_n::Piece_c& piece, const std::pair<int, int>& deploy_position);
-
       // \Name: move
       // \Description:
       // - moves one of this Player's live pieces to a new position

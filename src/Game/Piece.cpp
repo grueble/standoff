@@ -4,13 +4,13 @@
 
 using namespace Piece_n;
 
-Piece_c::Piece_c(const PieceType_e& piece_type) : 
-                 // const std::vector<std::pair<int, int>>& deployment_zones) :
-   //mPieceType(piece_type),
+Piece_c::Piece_c(const PieceType_e& piece_type) :
+   mPieceType(piece_type) 
    mPosition(std::make_pair(-1, -1)),
    mDirection(Direction_e::NONE),
    // mDeploymentZones(deployment_zones),
-   mPlayState(PlayState_e::RESERVE)
+   mPlayState(PlayState_e::RESERVE),
+   mTeam(team)
 {
 }
 
