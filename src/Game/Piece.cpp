@@ -4,14 +4,21 @@
 
 using namespace Piece_n;
 
-Piece_c::Piece_c(const PieceType_e& piece_type) :
-   mPieceType(piece_type) 
-   mPosition(std::make_pair(-1, -1)),
+Piece_c::Piece_c(const PieceType_e& piece_type, const std::pair<int, int> reserve_position) :
+   mPieceType(piece_type),
+   mPosition(reserve_position),
    mDirection(Direction_e::NONE),
-   // mDeploymentZones(deployment_zones),
    mPlayState(PlayState_e::RESERVE),
    mTeam(team)
 {
+   if (piece_type == PAWN)
+   {
+      mDeploymentZones = PAWN_DEPLOYMENT_ZONES;  
+   }
+   else
+   {
+      mDeploymentZones = GUNSLINGER_DEPLOYMENT_ZONES;
+   }
 }
 
 Piece_c::~Piece_c()
@@ -28,7 +35,7 @@ const std::pair<int, int>& Piece_c::getPosition()
    return mPosition;
 }
 
-void Piece_c::setPosition(const int& new_position_x, const int& new_position_y) 
+void Piece_c::setPosition(const std::pair<int, int>& new_position) 
 {
    switch (mPlayState)
    {
@@ -96,6 +103,7 @@ void Piece_c::nextPlayState()
       }
       case LIVE :
       {
+         // maybe just ~Piece_c()
          mPlayState = DEAD;
          break;
       }
@@ -110,12 +118,12 @@ void Piece_c::nextPlayState()
    }
 }
 
-bool Piece_c::isValidDeployment(const int& deploy_x, const int& deploy_y)
+bool Piece_c::isValidDeployment(const std::pair<int, int>& deploy_position)
 {
    std::vector<std::pair<int, int>>::iterator it;
    for (it = mDeploymentZones.begin(); it != mDeploymentZones.end(); ++it)
    {
-      if (it->x == deploy_x && it->y == deploy_y)
+      if (*it = deploy_position)
       {
          return true;
       }
@@ -124,15 +132,15 @@ bool Piece_c::isValidDeployment(const int& deploy_x, const int& deploy_y)
    return false;
 }
 
-bool Piece_c::isValidMove(const int& move_x, const int& move_y)
-{
-   if (abs(mPosition.first - move_x <= 1))
-   {
-      if (abs(mPosition.second - move_y <= 1))
-      {
-         return true;
-      }
-   }
+// bool Piece_c::isValidMove(const std::pair<int, int>& move_position)
+// {
+//    if (abs(mPosition.first - move_x <= 1))
+//    {
+//       if (abs(mPosition.second - move_y <= 1))
+//       {
+//          return true;
+//       }
+//    }
 
-   return false;
-}
+//    return false;
+// }

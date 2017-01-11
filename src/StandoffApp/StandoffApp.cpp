@@ -40,7 +40,7 @@ bool StandoffApp_c::init()
       else
       {
          // create renderer for window
-         gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED);
+         gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_TARGETTEXTURE);
          if( gRenderer == NULL )
          {
             printf( "Renderer could not be created! SDL Error: %s\n", SDL_GetError() );
@@ -88,13 +88,9 @@ int StandoffApp_c::run()
 
    // game instance
    Game_n::Game_c game(*mResourceManager);
-   game.start();
 
-   // the current player
-   Player_n::Player_c current_player = game.currentPlayer();
-
-   // pointer the current piece, if one exists 
-   Piece_n::Piece_c* current_piece = NULL;
+   // the SDL_RENDERER_TARGETTEXTURE
+   SDL_Texture* board_texture = getImage(BOARD);
 
    // main loop
    while (!quit)
@@ -115,7 +111,7 @@ int StandoffApp_c::run()
                // user presses LMB
                if (e.button == SDL_BUTTON_LEFT)
                {
-                  this->handleLmbDown(e, &current_player, current_piece);
+                  this->handleLmbDown(e, game);
                }
                else
                {
@@ -125,7 +121,7 @@ int StandoffApp_c::run()
             // user presses a key
             case SDL_KEYDOWN :
             {
-               this->handleKeyDown(e, &current_player, current_piece);
+               this->handleKeyDown(e, game);
             }
          }
 
@@ -142,10 +138,6 @@ int StandoffApp_c::run()
 
 void StandoffApp_c::close()
 {
-   // free resource manager
-   delete mResourceManager;
-   mResourceManager = NULL;
-
    // destroy loaded texture
    SDL_DestroyTexture(gTexture);
    gTexture = NULL;
@@ -165,55 +157,34 @@ void StandoffApp_c::close()
 void StandoffApp_c::handleLmbDown(const SDL_Event& e, 
                                   Game_n::Game_c& current_game)
 {
-   // flag indicating whether or not the current mouse click event hit a piece
-   bool hit_piece = false;
-
-   // stores the position of the most recently accessed piece
-   std::pair<int, int> piece_position;
-
-   /* 
+   /*
     * transform the mouse click event's coordinate in pixels into a
     * "screen tile" coordinate - for reference, the board's upper left
     * hand corner is at (1, 4) in the "screen tile" coordinate system
     */
    std::pair<int, int> screen_tile_coord =
-      std::make_pair((( e.x - BOARD_COORD.x ) / TILE_WIDTH), 
-                     (( e.y - BOARD_COORD.y ) / TILE_WIDTH));
+      std::make_pair( e.x / Game_n::TILE_WIDTH , e.y / Game_n::TILE_WIDTH ); // check that integer div
 
    /*
     * loop through the current player's available pieces (either in reserve 
     * or in play) to determine if the mouse click event selects a piece
     */
-   std::vector<Piece_n::Piece_c> pieces = current_game.currentPlayer().getPieces(); 
+   std::vector<Piece_n::Piece_c>& pieces = current_game.getCurrentPlayer().mPieces; 
    std::std::vector<Piece_n::Piece_c>::iterator it;
    for (it = pieces.being(); it != pieces.end(); ++it)
    {
-      piece_position = it->getPosition();
-
-      if (piece_position == screen_tile_coord)
+      if (current_game.getCurrentPiece().getPosition() == screen_tile_coord &&
+          it->getCurrentPiece().getPlayState() != Piece_n::PlayState_e::DEAD)
       {
-         current_game.currentPiece() = it;
+         current_game.setCurrentPiece(it);
          break;
       }
    }
 
    // if we didn't hit a piece with this mouse click event AND a piece is currently selected...
-   if (it = pieces.end() && current_game.currentPiece() != NULL)
+   if (it = pieces.end() && current_game.getCurrentPiece() != NULL)
    {
-      // if the mouse click event's "screen tile" coordinate is within the board's bounds...
-      if (screen_tile_x_coord >= BOARD_COORD &&
-          screen_tile_x_coord <= BOARD_COORD + BOARD_SIDE_LENGTH &&
-          screen_tile_y_coord >= BOARD_COORD &&
-          screen_tile_y_coord >= BOARD_COORD + BOARD_SIDE_LENGTH)
-      {
-         current_game.setMove(piece_position, screen_tile_coord);
-         
-         current_game.currentPiece()->setPosition(screen_tile_coord.x, screen_tile_coord.y);
-      }
-      else 
-      {
-         current_piece = NULL;
-      }
+      current_game.move(screen_tile_coord);
    }
 }
 
@@ -228,13 +199,13 @@ void StandoffApp_c::handleKeyDown(const SDL_Event& e,
          {
             if (!current_game.gameOver())
             {
-               current_game.currentPiece() = NULL;
+               current_game.emptyCurrentPiece();
 
                if (current_game.getShootoutFlag())
                {
                   current_game.shootout();
                }
-               
+
                current_game.nextPlayer();
             }
             else
@@ -244,49 +215,28 @@ void StandoffApp_c::handleKeyDown(const SDL_Event& e,
          }
          case SDLK_BACKSPACE :
          {
-            current_piece = NULL;
+            current_game.emptyCurrentPiece();
             current_game.revertMove();
          }
-         // case SDLK_ESCAPE :
-         // {
-         //    current_piece = NULL;
-         //    current_game.revertMove();
-         // }
          case SDLK_SPACE :
          {
-            current_game.setShootoutFlag(true);
+            current_game.setShootoutFlag();
          }
          case SDLK_DOWN :
          {
-            if (current_game.currentPiece() != NULL && 
-                current_game.currentPiece().getPlayState() == Piece_n::LIVE)
-            {
-               current_game.currentPiece()->setDirection(Piece_n::DOWN);
-            }   
+            current_game.rotate(Piece_n::DOWN);   
          }
          case SDLK_UP :
          {
-            if (current_game.currentPiece() != NULL && 
-                current_game.currentPiece().getPlayState() == Piece_n::LIVE)
-            {
-               current_game.currentPiece()->setDirection(Piece_n::UP);
-            }
+            current_game.rotate(Piece_n::UP);
          } 
          case SDLK_LEFT :
          {
-            if (current_game.currentPiece() != NULL && 
-                current_game.currentPiece().getPlayState() == Piece_n::LIVE)
-            {
-               current_game.currentPiece()->setDirection(Piece_n::LEFT);
-            }
+            current_game.rotate(Piece_n::LEFT);
          } 
          case SDLK_RIGHT :
          {
-            if (current_game.currentPiece() != NULL && 
-                current_game.currentPiece().getPlayState() == Piece_n::LIVE)
-            {
-               current_game.currentPiece()->setDirection(Piece_n::RIGHT);
-            }
+            current_game.rotate(Piece_n::RIGHT);
          }  
       }
    }

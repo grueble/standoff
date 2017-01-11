@@ -6,6 +6,16 @@
 
 namespace Piece_n
 {
+   static const std::vector<std::pair<int, int>> PAWN_DEPLOYMENT_ZONES = 
+   {
+      std::make_pair(), 
+   };
+
+   static const std::vector<std::pair<int, int>> GUNSLINGER_DEPLOYMENT_ZONES = 
+   {
+      std::make_pair(), 
+   };
+
    // the possible types of pieces
    enum PieceType_e
    {
@@ -133,7 +143,7 @@ namespace Piece_n
       // - int&, the proposed move position's y coordinate
       // \Returns
       // - bool, true if the move is valid; false o/w
-      bool isValidMove(const int& move_x, const int& move_y);
+      // bool isValidMove(const int& move_x, const int& move_y);
 
    private:
       // this Piece's type

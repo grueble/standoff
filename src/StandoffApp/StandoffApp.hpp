@@ -8,25 +8,9 @@
 
 namespace StandoffApp_n
 {
-   // the width of (both) the border tiles (and the margin)
-   static const int TILE_WIDTH = 60; 
-
-   /* 
-    * NOTE: to transform a "screen tile" point into a window 
-    * point (in pixels), multiply the coordinate's  x and y 
-    * values by TILE_WIDTH
-    */
-
    // screen dimension constants
-   static const int SCREEN_WIDTH = TILE_WIDTH * 11;
-   static const int SCREEN_HEIGHT = TILE_WIDTH * 17;
-
-   // the board's upper left hand corner in "screen tile" coordinates
-   // -> the window's upper left hand corner is at (0, 0)
-   static const std::pair<int,int> BOARD_COORD = std::make_pair(1, 4); 
-
-   // the board's side length
-   static const int BOARD_SIDE_LENGTH = 9;
+   static const int SCREEN_WIDTH = Game_n::TILE_WIDTH * 11;
+   static const int SCREEN_HEIGHT = Game_n::TILE_WIDTH * 17;
 
    class StandoffApp_c
    {
@@ -118,7 +102,7 @@ namespace StandoffApp_n
       SDL_Texture* gTexture = NULL;
 
       // bulk loads assets and manages them for the client
-      ResourceManager_n::ResourceManager_c* mResourceManager = NULL;
+      std::unique_ptr<ResourceManager_n::ResourceManager_c> mResourceManager;
    };
 }
 

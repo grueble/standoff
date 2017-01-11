@@ -52,30 +52,30 @@ bool ResourceManager_c::loadTextures()
       success = false;
    }
 
-   SDL_Surface* loaded_surface = NULL;
+   // SDL_Surface* loaded_surface = NULL;
 
-   SDL_Texture* converted_texture = NULL;
+   SDL_Texture* loaded_texture = NULL;
 
    std::map<ImageType_e, std::string>::const_iterator it; 
    for (it = ResourceManager_n::IMAGE_PATHS.begin(); it != ResourceManager_n::IMAGE_PATHS.end(); ++it)
    {
       std::string path_to_image = PATH_TO_ASSETS + it->second;
 
-      loaded_surface = IMG_Load(path_to_image.c_str());
+      loaded_texture = IMG_LoadTexture(path_to_image.c_str());
 
-      if (loaded_surface == NULL)
+      if (loaded_texture == NULL)
       {
-         printf( "Unable to load image %s! SDL_image Error: %s\n", path_to_image.c_str(), IMG_GetError() );
+         printf( "Unable to load texture %s! SDL_image Error: %s\n", path_to_image.c_str(), IMG_GetError() );
          success = false;
       }
       else 
       {
-         converted_texture = SDL_CreateTextureFromSurface(gRenderer, loaded_surface);
+         // converted_texture = SDL_CreateTextureFromSurface(gRenderer, loaded_surface);
 
-         mTextures.insert(std::pair<ImageType_e, SDL_Texture*>(it->first, converted_texture));
+         mTextures.insert(std::pair<ImageType_e, SDL_Texture*>(it->first, loaded_texture));
 
-         SDL_FreeSurface(loaded_surface);
-         loaded_surface = NULL;
+         // SDL_FreeSurface(loaded_surface);
+         // loaded_surface = NULL;
       }
    }
 
