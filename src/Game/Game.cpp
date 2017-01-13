@@ -8,8 +8,7 @@ using namespace Game_n;
 Game_c::Game_c(const ResourceManager_n::ResourceManager_c& resource_manager) :
    mResourceManager(resource_manager),
    mCurrentPlayer(mPlayer1),
-   mShootoutFlag(false),
-   mMoveFlag(false)
+   mShootoutFlag(false)
 {
    initPieces(mPlayer1);
    initPieces(mPlayer2);
@@ -32,7 +31,7 @@ void Game_c::move(const std::pair<int, int>& screen_tile_coord)
       mMovedPiece = mCurrentPiece;
 
       // copy and store current piece state
-      mPreMovePiece = *mCurrentPiece;
+      mPreMovePieceState = *mCurrentPiece;
       
       mCurrentPiece->setPosition(screen_tile_coord.x, screen_tile_coord.y);
    }
@@ -49,7 +48,7 @@ void rotate(const Piece_n::Direction_e& rotate_direction)
       mMovedPiece = mCurrentPiece;
 
       // copy and store current piece state
-      mPreMovePiece = *mCurrentPiece;
+      mPreMovePieceState = *mCurrentPiece;
 
       mCurrentPiece->setDirection(rotate_direction);
    }
@@ -114,6 +113,33 @@ void Game_c::emptyCurrentPiece()
    mCurrentPiece = NULL;
 }
 
+const std::vector<Piece_n::Piece_c>& Game_c::getPlayer1Pieces()
+{
+   return mPlayer1.mPieces;
+}
+
+const std::vector<Piece_n::Piece_c>& Game_c::getPlayer2Pieces()
+{
+   return mPlayer2.mPieces;
+}
+
+const Piece_n::Piece_c& Game_c::getMovedPiece()
+{
+   return *(&mMovedPiece);
+}
+
+const Piece_n::Piece_c& Game_c::getPreMovePieceState()
+{
+   return &mPreMovePieceStateState;
+}
+
+void Game_c::revertMove()
+{
+   // copy constructor
+   *mMovedPiece = mPreMovePieceState;
+   mMovedPiece = NULL;
+}
+
 const bool& Game_c::getShootoutFlag()
 {
    return mShootoutFlag;
@@ -122,13 +148,6 @@ const bool& Game_c::getShootoutFlag()
 void Game_c::setShootoutFlag()
 {
    mShootoutFlag = true;
-}
-
-void Game_c::revertMove()
-{
-   // copy constructor
-   *mMovedPiece = mPreMovePiece;
-   mMovedPiece = NULL;
 }
 
 void Game_c::initPieces(Player_s& player, bool player1)
@@ -140,7 +159,7 @@ void Game_c::initPieces(Player_s& player, bool player1)
    // add pawns
    for (int i = 0; i < NUM_PAWNS; ++i)
    {
-      player1 ? reserve_position.x - 1 : reserve_position.x + 1;
+      player1 ? reserve_position.first - 1 : reserve_position.first + 1;
       Piece_n::Piece_c* new_pawn = new Piece_n::Piece_c(Piece_n::PAWN);
       mPieces.push_back(*new_pawn);
    }
@@ -151,18 +170,18 @@ void Game_c::initPieces(Player_s& player, bool player1)
    // add guns
    for (int i = 0; i < NUM_GUNS; ++i)
    {
-      player1 ? reserve_position.x - 1 : reserve_position.x + 1;
+      player1 ? reserve_position.first - 1 : reserve_position.first + 1;
       Piece_n::Piece_c* new_gun = new Piece_n::Piece_c(Piece_n::PAWN);
       mPieces.push_back(*new_gun);
    }
 
    // place slingers on a new row
-   player1 ? reserve_position.y + 1 : reserve_position.y - 1;
+   player1 ? reserve_position.second + 1 : reserve_position.second - 1;
 
    // add slingers
    for (int i = 0; i < NUM_SLINGERS; ++i)
    {
-      player1 ? reserve_position.x - 1 : reserve_position.x + 1;
+      player1 ? reserve_position.first - 1 : reserve_position.first + 1;
       Piece_n::Piece_c>* new_slinger = new Piece_n::Piece_c(Piece_n::PAWN);
       mPieces.push_back(*new_slinger);
    }
@@ -200,12 +219,12 @@ void Game_c::detectHit(const Piece_n::Piece_c& piece,
          std::vector<Piece_n::Piece_c>::iterator it;
          for (it = pieces.begin(); it != pieces.end(); ++it)
          {
-            if (it->getPosition().y < piece.getPosition().y && 
-                it->getPosition().y >= BOARD_COORD.y) 
+            if (it->getPosition().second < piece.getPosition().second && 
+                it->getPosition().second >= BOARD_COORD.second) 
             {
                if (hit_piece)
                {
-                  if (it->getPosition().y > hit_piece.getPosition().y)
+                  if (it->getPosition().second > hit_piece.getPosition().second)
                   {
                      hit_piece = &(*it);
                   }
@@ -218,12 +237,12 @@ void Game_c::detectHit(const Piece_n::Piece_c& piece,
             }
             if (slinger_flag)
             {
-               if (it->getPosition().x > piece.getPosition().x && 
-                   it->getPosition().y <= BOARD_COORD.x + BOARD_SIDE_LENGTH) 
+               if (it->getPosition().first > piece.getPosition().first && 
+                   it->getPosition().first <= BOARD_COORD.first + BOARD_SIDE_LENGTH) 
                {
                   if (slinger_hit_piece)
                   {
-                     if (it->getPosition.x < hit_piece.getPosition().x)
+                     if (it->getPosition.first < hit_piece.getPosition().first)
                      {
                         hit_piece = &(*it);
                      }
@@ -249,12 +268,12 @@ void Game_c::detectHit(const Piece_n::Piece_c& piece,
          std::vector<Piece_n::Piece_c>::iterator it;
          for (it = pieces.begin(); it != pieces.end(); ++it)
          {
-            if (it->getPosition().y > piece.getPosition().y && 
-                it->getPosition().y <= BOARD_COORD.y + BOARD_SIDE_LENGTH) 
+            if (it->getPosition().second > piece.getPosition().second && 
+                it->getPosition().second <= BOARD_COORD.second + BOARD_SIDE_LENGTH) 
             {
                if (hit_piece)
                {
-                  if (it->getPosition().y < hit_piece.getPosition().y)
+                  if (it->getPosition().second < hit_piece.getPosition().second)
                   {
                      hit_piece = &(*it);
                   }
@@ -267,12 +286,12 @@ void Game_c::detectHit(const Piece_n::Piece_c& piece,
             }
             if (slinger_flag)
             {
-               if (it->getPosition().x < piece.getPosition().x && 
-                   it->getPosition().x >= BOARD_COORD.x) 
+               if (it->getPosition().first < piece.getPosition().first && 
+                   it->getPosition().first >= BOARD_COORD.first) 
                {
                   if (slinger_hit_piece)
                   {
-                     if (it->getPosition.x > hit_piece.getPosition().x)
+                     if (it->getPosition.first > hit_piece.getPosition().first)
                      {
                         hit_piece = &(*it);
                      }
@@ -298,12 +317,12 @@ void Game_c::detectHit(const Piece_n::Piece_c& piece,
          std::vector<Piece_n::Piece_c>::iterator it;
          for (it = pieces.begin(); it != pieces.end(); ++it)
          {
-            if (it->getPosition().x < piece.getPosition().x && 
-                it->getPosition().x >= BOARD_COORD.x) 
+            if (it->getPosition().first < piece.getPosition().first && 
+                it->getPosition().first >= BOARD_COORD.first) 
             {
                if (hit_piece)
                {
-                  if (it->getPosition().x > hit_piece.getPosition().x)
+                  if (it->getPosition().first > hit_piece.getPosition().first)
                   {
                      hit_piece = &(*it);
                   }
@@ -316,12 +335,12 @@ void Game_c::detectHit(const Piece_n::Piece_c& piece,
             }
             if (slinger_flag)
             {
-               if (it->getPosition().y < piece.getPosition().y && 
-                   it->getPosition().y >= BOARD_COORD.y) 
+               if (it->getPosition().second < piece.getPosition().second && 
+                   it->getPosition().second >= BOARD_COORD.second) 
                {
                   if (slinger_hit_piece)
                   {
-                     if (it->getPosition.y > hit_piece.getPosition().y)
+                     if (it->getPosition.second > hit_piece.getPosition().second)
                      {
                         hit_piece = &(*it);
                      }
@@ -347,12 +366,12 @@ void Game_c::detectHit(const Piece_n::Piece_c& piece,
          std::vector<Piece_n::Piece_c>::iterator it;
          for (it = pieces.begin(); it != pieces.end(); ++it)
          {
-            if (it->getPosition().x > piece.getPosition().x && 
-                it->getPosition().y <= BOARD_COORD.x + BOARD_SIDE_LENGTH) 
+            if (it->getPosition().first > piece.getPosition().first && 
+                it->getPosition().y <= BOARD_COORD.first + BOARD_SIDE_LENGTH) 
             {
                if (hit_piece)
                {
-                  if (it->getPosition().x < hit_piece.getPosition().x)
+                  if (it->getPosition().first < hit_piece.getPosition().first)
                   {
                      hit_piece = &(*it);
                   }
@@ -365,12 +384,12 @@ void Game_c::detectHit(const Piece_n::Piece_c& piece,
             }
             if (slinger_flag)
             {
-               if (it->getPosition().y > piece.getPosition().y && 
-                   it->getPosition().y <= BOARD_COORD.y + BOARD_SIDE_LENGTH) 
+               if (it->getPosition().second > piece.getPosition().second && 
+                   it->getPosition().second <= BOARD_COORD.second + BOARD_SIDE_LENGTH) 
                {
                   if (slinger_hit_piece)
                   {
-                     if (it->getPosition.y < hit_piece.getPosition().y)
+                     if (it->getPosition.second < hit_piece.getPosition().second)
                      {
                         hit_piece = &(*it);
                      }

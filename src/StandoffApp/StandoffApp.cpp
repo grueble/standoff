@@ -46,8 +46,6 @@ bool StandoffApp_c::init()
             printf( "Renderer could not be created! SDL Error: %s\n", SDL_GetError() );
             success = false;
          }
-
-         
       }
    }
 
@@ -59,7 +57,7 @@ bool StandoffApp_c::loadMedia()
    // initialization flag
    bool success = true;
 
-   mResourceManager = new ResourceManager_n::ResourceManager_c(gRenderer);
+   mResourceManager = ResourceManager_n::ResourceManager_c(gRenderer);
 
    if (!mResourceManager)
    {
@@ -86,11 +84,14 @@ int StandoffApp_c::run()
    // event handler
    SDL_Event e;
 
-   // game instance
-   Game_n::Game_c game(*mResourceManager);
+   // initialize the current game
+   mCurrentGame = Game_n::Game_c(mResourceManager)
 
-   // the SDL_RENDERER_TARGETTEXTURE
-   SDL_Texture* board_texture = getImage(BOARD);
+   // set the render target (static)
+   SDL_SetRenderTarget(gRenderer, gTexture);
+
+   // render initial board state
+   draw(DrawType_e::START);
 
    // main loop
    while (!quit)
@@ -124,12 +125,6 @@ int StandoffApp_c::run()
                this->handleKeyDown(e, game);
             }
          }
-
-         // render texture to screen
-         SDL_RenderCopy(gRenderer, gTexture, NULL, NULL);
-
-         // update screen
-         SDL_RenderPresent(gRenderer);
       }
    }
 
@@ -154,8 +149,7 @@ void StandoffApp_c::close()
    SDL_Quit();
 }
 
-void StandoffApp_c::handleLmbDown(const SDL_Event& e, 
-                                  Game_n::Game_c& current_game)
+void StandoffApp_c::handleLmbDown(const SDL_Event& e)
 {
    /*
     * transform the mouse click event's coordinate in pixels into a
@@ -169,80 +163,305 @@ void StandoffApp_c::handleLmbDown(const SDL_Event& e,
     * loop through the current player's available pieces (either in reserve 
     * or in play) to determine if the mouse click event selects a piece
     */
-   std::vector<Piece_n::Piece_c>& pieces = current_game.getCurrentPlayer().mPieces; 
+   std::vector<Piece_n::Piece_c>& pieces = mCurrentGame.getCurrentPlayer().mPieces; 
    std::std::vector<Piece_n::Piece_c>::iterator it;
    for (it = pieces.being(); it != pieces.end(); ++it)
    {
-      if (current_game.getCurrentPiece().getPosition() == screen_tile_coord &&
-          it->getCurrentPiece().getPlayState() != Piece_n::PlayState_e::DEAD)
+      if (mCurrentGame.getCurrentPiece().getPosition() == screen_tile_coord &&
+          it->getCurrentPiece().getPlayState() != Piece_n::DEAD)
       {
-         current_game.setCurrentPiece(it);
+         mCurrentGame.setCurrentPiece(it);
          break;
       }
    }
 
    // if we didn't hit a piece with this mouse click event AND a piece is currently selected...
-   if (it = pieces.end() && current_game.getCurrentPiece() != NULL)
+   if (it = pieces.end() && mCurrentGame.getCurrentPiece() != NULL)
    {
-      current_game.move(screen_tile_coord);
+      mCurrentGame.move(screen_tile_coord);
+      draw(DrawType_e::MOVE);
+   }
+
+   // if mDeploymentFlag = true, SDL_WaitEvent e for an arrow key, then call handleKeyDown(e)
+}
+
+void StandoffApp_c::handleKeyDown(const SDL_Event& e)
+{
+   switch(e.keysym.scancode)
+   {
+      case SDLK_RETURN :
+      {
+         if (!mCurrentGame.gameOver())
+         {
+            if (mCurrentGame.getShootoutFlag())
+            {
+               mCurrentGame.shootout();
+               draw(DrawType_e::SHOOTOUT);
+            }
+
+            mCurrentGame.emptyCurrentPiece();
+            mCurrentGame.revertMove();
+            mCurrentGame.nextPlayer();
+         }
+         else
+         {
+            // end the game
+         }
+      }
+      case SDLK_BACKSPACE :
+      {
+         draw(DrawType_e::UNDO_MOVE);
+
+         mCurrentGame.emptyCurrentPiece();
+         mCurrentGame.revertMove();
+      }
+      case SDLK_SPACE :
+      {
+         mCurrentGame.setShootoutFlag();
+      }
+      case SDLK_UP :
+      {
+         mCurrentGame.rotate(Piece_n::UP);
+         draw(DrawType_e::MOVE);
+      } 
+      case SDLK_DOWN :
+      {
+         mCurrentGame.rotate(Piece_n::DOWN);
+         draw(DrawType_e::MOVE);  
+      }
+      case SDLK_LEFT :
+      {
+         mCurrentGame.rotate(Piece_n::LEFT);
+         draw(DrawType_e::MOVE);
+      } 
+      case SDLK_RIGHT :
+      {
+         mCurrentGame.rotate(Piece_n::RIGHT);
+         draw(DrawType_e::MOVE);
+      }  
    }
 }
 
-void StandoffApp_c::handleKeyDown(const SDL_Event& e,
-                                  Game_n::Game_c& current_game)
+void StandoffApp_c::draw(DrawType_e& draw_action)
 {
-   case SDL_KEYDOWN :
+   switch (draw_action)
    {
-      switch(e.keysym.scancode)
+      case START :
       {
-         case SDLK_RETURN :
+         // create the base screen + board texture
+         gTexture = SDL_CreateTexture(gRenderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, SCREEN_WIDTH, SCREEN_HEIGHT);
+         SDL_Texture* board_texture = getImage(ResourceManager_n::BOARD);
+         SDL_RenderCopy(gRenderer, board_texture, NULL, BOARD_DEST&);
+
+         // pre-fetch the piece images
+         SDL_Texture* p1_pawn_texture = getImage(ResourceManager_n::PINK_PAWN);
+         SDL_Texture* p1_gun_texture = getImage(ResourceManager_n::PINK_GUN);
+         SDL_Texture* p1_slinger_texture = getImage(ResourceManager_n::PINK_SLINGER);
+         SDL_Texture* p2_pawn_texture = getImage(ResourceManager_n::GREEN_PAWN);
+         SDL_Texture* p2_gun_texture = getImage(ResourceManager_n::GREEN_GUN);
+         SDL_Texture* p2_slinger_texture = getImage(ResourceManager_n::GREEN_SLINGER);
+
+         std::pair<int, int> piece_position;
+         SDL_Rect = piece_dest = SDL_Rect(0, 0, Game_n::TILE_WIDTH, Game_n::TILE_WIDTH);
+
+         // render all of player 1's pieces in reserve
+         std::std::vector<Piece_n::Piece_c> pieces = mCurrentGame.getPlayer1Pieces();
+         std::vector<Piece_n::Piece_c>::const_iterator p1_it;
+         for (p1_it = pieces.begin(); p1_it != pieces.end(); ++p1_it)
          {
-            if (!current_game.gameOver())
+            piece_position = p1_it->getPosition();
+
+            piece_dest.x = piece_position.first * Game_n::TILE_WIDTH;
+            piece_dest.y = piece_position.second * Game_n::TILE_WIDTH;
+
+            switch (p1_it->getPieceType())
             {
-               current_game.emptyCurrentPiece();
-
-               if (current_game.getShootoutFlag())
+               case Piece_n::PAWN :
                {
-                  current_game.shootout();
+                  SDL_RenderCopyEx(gRenderer, p1_pawn_texture, NULL, &piece_dest);
                }
+               case Piece_n::GUN :
+               {
+                  SDL_RenderCopyEx(gRenderer, p1_gun_texture, NULL, &piece_dest);
+               }
+               case Piece_n::SLINGER :
+               {
+                  SDL_RenderCopyEx(gRenderer, p1_slinger_texture, NULL, &piece_dest);
+               }
+            }
+         }
 
-               current_game.nextPlayer();
+         // render all of player 2's pieces in reserve
+         pieces = mCurrentGame..getPlayer2Pieces();
+         std::vector<Piece_n::Piece_c>::const_iterator p2_it;
+         for (p2_it = pieces.begin(); p2_it != pieces.end(); ++p2_it)
+         {
+            piece_position = p2_it->getPosition();
+
+            piece_dest.x = piece_position.first * Game_n::TILE_WIDTH;
+            piece_dest.y = piece_position.second * Game_n::TILE_WIDTH;
+
+            switch (p2_it->getPieceType())
+            {
+               case Piece_n::PAWN :
+               {
+                  SDL_RenderCopy(gRenderer, p2_pawn_texture, NULL, &piece_dest);
+               }
+               case Piece_n::GUN :
+               {
+                  SDL_RenderCopy(gRenderer, p2_gun_texture, NULL, &piece_dest);
+               }
+               case Piece_n::SLINGER :
+               {
+                  SDL_RenderCopy(gRenderer, p2_slinger_texture, NULL, &piece_dest);
+               }
+            }
+         }
+
+         SDL_DestroyTexture(pawn_texture);
+         SDL_DestroyTexture(gun_texture);
+         SDL_DestroyTexture(slinger_texture);
+      }
+      case MOVE :
+      {
+         drawMove(mCurrentGame.getMovedPiece().getPosition(), 
+                  mCurrentGame.getPreMovePieceState().getPosition());
+      }
+      case UNDO_MOVE :
+      {
+         drawMove(mCurrentGame.getPreMovePieceState().getPosition(), 
+                  mCurrentGame.getMovedPiece().getPosition());
+      }
+      case SHOOTOUT :
+      {
+         SDL_Texture* tile_texture = NULL;
+         std::pair<int, int> piece_position;
+         SDL_Rect = dest_rect = SDL_Rect(0, 0, Game_n::TILE_WIDTH, Game_n::TILE_WIDTH);
+
+         std::std::vector<Piece_n::Piece_c> pieces = mCurrentGame.getPlayer1Pieces();
+         std::vector<Piece_n::Piece_c>::const_iterator p1_it;
+         for (p1_it = pieces.begin(); p1_it != pieces.end();)
+         {
+            if (p1_it->getPlayState() == Piece_n::DEAD)
+            {
+               piece_position = p1_it->getPosition();
+               tile_texture = getTileBaseTexture(piece_position);
+               piece_rect.x = piece_position.first * Game_n::TILE_WIDTH;
+               piece_rect.y = piece_position.second * Game_n::TILE_WIDTH;
+               SDL_RenderCopy(gRenderer, tile_texture, NULL, &dest_rect);
+               pieces.erase(p1_it);
             }
             else
             {
-               // end the game
+               ++p1_it;
             }
          }
-         case SDLK_BACKSPACE :
+         pieces = mCurrentGame..getPlayer2Pieces();
+         std::vector<Piece_n::Piece_c>::const_iterator p2_it;
+         for (p2_it = pieces.begin(); p2_it != pieces.end();)
          {
-            current_game.emptyCurrentPiece();
-            current_game.revertMove();
+            if (p2_it->getPlayState() == Piece_n::DEAD)
+            {
+               piece_position = p2_it->getPosition();
+               tile_texture = getTileBaseTexture(piece_position);
+               piece_rect.x = piece_position.first * Game_n::TILE_WIDTH;
+               piece_rect.y = piece_position.second * Game_n::TILE_WIDTH;
+               SDL_RenderCopy(gRenderer, tile_texture, NULL, &dest_rect);
+               pieces.erase(p2_it);
+            }
+            else
+            {
+               ++p2_it;
+            }
          }
-         case SDLK_SPACE :
-         {
-            current_game.setShootoutFlag();
-         }
-         case SDLK_DOWN :
-         {
-            current_game.rotate(Piece_n::DOWN);   
-         }
-         case SDLK_UP :
-         {
-            current_game.rotate(Piece_n::UP);
-         } 
-         case SDLK_LEFT :
-         {
-            current_game.rotate(Piece_n::LEFT);
-         } 
-         case SDLK_RIGHT :
-         {
-            current_game.rotate(Piece_n::RIGHT);
-         }  
       }
    }
+
+   // update screen
+   SDL_RenderPresent(gRenderer);
+}
+
+void StandoffApp_c::drawMove(const std::pair<int, int>& move_position, const std::pair<int, int>& empty_position)
+{
+   Piece_n::Piece_c moved_piece = mCurrentGame.getMovedPiece();
+
+   SDL_Texture* piece_texture = NULL;
+   switch (moved_piece.getPieceType())
+   {
+      case Piece_n::PAWN :
+      {
+         if (moved_piece.getTeam() == Piece_n::PINK)
+         {
+            piece_texture = getImage(ResourceManager_n::PINK_PAWN);
+         }
+         else // Piece_n::GREEN
+         {
+            piece_texture = getImage(ResourceManager_n::GREEN_PAWN);
+         }
+      }
+      case Piece_n::GUN :
+      {
+         if (moved_piece.getTeam() == Piece_n::PINK)
+         {
+            piece_texture = getImage(ResourceManager_n::PINK_GUN);
+         }
+         else // Piece_n::GREEN
+         {
+            piece_texture = getImage(ResourceManager_n::GREEN_GUN);
+         }
+      }
+      case Piece_n::SLINGER :
+      {
+        if (moved_piece.getTeam() == Piece_n::PINK)
+         {
+            piece_texture = getImage(ResourceManager_n::PINK_SLINGER);
+         }
+         else // Piece_n::GREEN
+         {
+            piece_texture = getImage(ResourceManager_n::GREEN_SLINGER);
+         }
+      }
+   }
+
+   double piece_direction = 0;
+   switch (moved_piece.getDirection())
+   {
+      // no case for Piece_n::UP bc piece_direction is intialized to 0 degrees
+
+      case Piece_n::DOWN :
+      {
+         piece_direction = 180;
+      }
+      case Piece_n::LEFT :
+      {
+         piece_direction = 270;
+      }
+      case Piece_n::RIGHT :
+      {
+         piece_direction = 90;
+      }
+   }
+
+   // render the moved piece in its new position
+   SDL_Rect dest_rect = SDL_Rect(move_position.first * Game_n::TILE_WIDTH,
+                                 move_position.second * Game_n::TILE_WIDTH,
+                                 Game_n::TILE_WIDTH, Game_n::TILE_WIDTH);
+
+   SDL_RenderCopyEx(gRenderer, piece_texture, NULL, &dest_rect, piece_direction, NULL, SDL_FLIP_NONE);
+
+   // clear the piece image from the moved piece's old position
+   SDL_Texture* tile_texture = getTileBaseTexture(empty_position);
+   dest_rect.x = pre_move_position.first * Game_n::TILE_WIDTH;
+   dest_rect.y = pre_move_position.second * Game_n::TILE_WIDTH;
+   SDL_RenderCopy(gRenderer, tile_texture, NULL, &dest_rect);
 }
 
 SDL_Texture* StandoffApp_c::getImage(ResourceManager_n::ImageType_e image_type)
 {
    return mResourceManager->getTexture(image_type);
+}
+
+SDL_Texture* StandoffApp_c::getTileBaseTexture(const std::pair<int, int>& tile_position)
+{
+
 }

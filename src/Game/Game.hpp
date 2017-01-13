@@ -103,6 +103,51 @@ namespace Game_n
       // - none
       void emptyCurrentPiece();
 
+      // \Name: getPlayer1Pieces
+      // \Description:
+      // - returns a particular player's pieces
+      // \Argument:
+      // - none
+      // \Returns
+      // - const std::vector<Piece_n::Piece_c>&, the passed player's pieces
+      const std::vector<Piece_n::Piece_c>& getPlayer1Pieces();
+
+      // \Name: getPlayer2Pieces
+      // \Description:
+      // - returns a particular player's pieces
+      // \Argument:
+      // - none
+      // \Returns
+      // - const std::vector<Piece_n::Piece_c>&, the passed player's pieces
+      const std::vector<Piece_n::Piece_c>& getPlayer2Pieces();
+
+      // \Name: getMovedPiece
+      // \Description:
+      // - returns mMovedPiece
+      // \Argument:
+      // - none
+      // \Returns
+      // - none
+      const Piece_n::Piece_c& getMovedPiece();
+
+      // \Name: getPreMovePieceState
+      // \Description:
+      // - returns mPreMovePieceState
+      // \Argument:
+      // - none
+      // \Returns
+      // - none
+      const Piece_n::Piece_c& getPreMovePieceState();
+
+      // \Name: revertMove
+      // \Description:
+      // - reverts a moved piece to its previous position
+      // \Argument:
+      // - none
+      // \Returns
+      // - none
+      void revertMove();
+
       // \Name: getShootoutFlag
       // \Description:
       // - returns the shootout flag
@@ -120,15 +165,6 @@ namespace Game_n
       // \Returns
       // - none
       void setShootoutFlag();
-
-      // \Name: revertMove
-      // \Description:
-      // - reverts a moved piece to its previous position
-      // \Argument:
-      // - none
-      // \Returns
-      // - none
-      void revertMove();
 
    protected:
       // \Name: initPieces
@@ -184,14 +220,17 @@ namespace Game_n
       // pointer to the piece staged for moving, if any
       Piece_n::Piece_c* mMovedPiece;
 
-      // stores the previous state of the piece staged for moving in case a revert is made
-      Piece_n::Piece_c mPreMovePiece;
+      // stores the previous state of the piece staged for moving (in case a revert is needed)
+      Piece_n::Piece_c mPreMovePieceState;
 
       // true if a shootout has been called, false o/w
       bool mShootoutFlag;
 
       // true if a move is currently staged, false o/w
       bool mMoveFlag;
+
+      // true if the currently staged move is a deployment, false o/w
+      bool mDeploymentFlag;
    };
 }
 

@@ -18,9 +18,12 @@ namespace ResourceManager_n
       EMPTY_TILE,
       SCORING_TILE,
       MANHOLE,
-      PAWN,
-      GUN,
-      SLINGER,
+      PINK_PAWN,
+      PINK_GUN,
+      PINK_SLINGER,
+      GREEN_PAWN,
+      GREEN_GUN,
+      GREEN_SLINGER,
       CURSOR,
       BRIEFCASE
    };

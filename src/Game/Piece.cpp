@@ -131,16 +131,3 @@ bool Piece_c::isValidDeployment(const std::pair<int, int>& deploy_position)
    
    return false;
 }
-
-// bool Piece_c::isValidMove(const std::pair<int, int>& move_position)
-// {
-//    if (abs(mPosition.first - move_x <= 1))
-//    {
-//       if (abs(mPosition.second - move_y <= 1))
-//       {
-//          return true;
-//       }
-//    }
-
-//    return false;
-// }

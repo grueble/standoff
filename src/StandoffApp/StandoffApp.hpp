@@ -12,6 +12,23 @@ namespace StandoffApp_n
    static const int SCREEN_WIDTH = Game_n::TILE_WIDTH * 11;
    static const int SCREEN_HEIGHT = Game_n::TILE_WIDTH * 17;
 
+   // board render destination
+   static const SDL_Rect board_dest = 
+      { 
+         Game_n::BOARD_COORD.x * Game_n::TILE_WIDTH,
+         Game_n::BOARD_COORD.x * Game_n::TILE_WIDTH,
+         Game_n::BOARD_SIDE_LENGTH * Game_n::TILE_WIDTH,
+         Game_n::BOARD_SIDE_LENGTH * Game_n::TILE_WIDTH \
+      };
+
+   enum DrawType_e
+   {
+      START = 0,
+      MOVE = 1,
+      UNDO_MOVE = 2,
+      SHOOTOUT = 3
+   };
+
    class StandoffApp_c
    {
    public:
@@ -63,25 +80,37 @@ namespace StandoffApp_n
       // - handles an SDL_MOUSEBUTTONDOWN event (only for SDL_BUTTON_LEFT)
       // \Argument:
       // - const SDL_Event&, the event to handle 
-      // - Game_c&, the active game
-      // - Player_c&, address of the current player
-      // - Piece_c*, pointer to the current piece (can be NULL)
       // \Returns
       // - void
-      void handleLmbDown(const SDL_Event& e, Game_n::Game_c& current_game);
+      void handleLmbDown(const SDL_Event& e);
 
       // \Name: handleKeyDown
       // \Description:
       // - handles an SDL_KEYDOWN event 
       // \Argument:
       // - const SDL_Event&, the event to handle 
-      // - Game_c&, the active game
-      // - Player_c&, address of the current player
-      // - Piece_c*, pointer to the current piece (can be NULL)
       // \Returns
       // - void
-      void handleKeyDown(const SDL_Event& e,
-                         Game_n::Game_c& current_game);
+      void handleKeyDown(const SDL_Event& e);
+
+      // \Name: draw
+      // \Description:
+      // - performs a draw action 
+      // \Argument:
+      // - DrawType_e&, the type of draw action to perform
+      // \Returns
+      // - void
+      void draw(DrawType_e& draw_action);
+
+      // \Name: draw
+      // \Description:
+      // - draws a move or undo_move action
+      // \Argument:
+      // - const std::pair<int, int>&, the position to draw the moved piece
+      // - const std::pair<int, int>&, the position to redraw as a base tile
+      // \Returns
+      // - void
+      void drawMove(const std::pair<int, int>& move_position, const std::pair<int, int>& empty_position);
 
       // \Name: getImage
       // \Description:
@@ -91,6 +120,15 @@ namespace StandoffApp_n
       // \Returns
       // - SDL_Texture*, pointer to the desired texture
       SDL_Texture* getImage(ResourceManager_n::ImageType_e image_type);
+
+      // \Name: getTileBaseTexture
+      // \Description:
+      // - gets the base texture of a particular screen tile
+      // \Argument:
+      // - const std::pair<int, int>&, the screen tile position
+      // \Returns
+      // - SDL_Texture*, pointer to the desired texture
+      SDL_Texture* StandoffApp_c::getTileBaseTexture(const std::pair<int, int>& tile_position)
 
       // the window to render to
       SDL_Window* gWindow = NULL;
@@ -102,7 +140,10 @@ namespace StandoffApp_n
       SDL_Texture* gTexture = NULL;
 
       // bulk loads assets and manages them for the client
-      std::unique_ptr<ResourceManager_n::ResourceManager_c> mResourceManager;
+      ResourceManager_n::ResourceManager_c mResourceManager;
+
+      // the current game instance
+      Game_n::Game_c mCurrentGame;
    };
 }
 

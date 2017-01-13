@@ -28,9 +28,9 @@ namespace Piece_n
    enum Direction_e
    {
       UP = 0,
-      RIGHT = 1,
-      DOWN = 2,
-      LEFT = 3,
+      DOWN = 1,
+      LEFT = 2,
+      RIGHT = 3,
       NONE = 4
    };
 
@@ -87,7 +87,7 @@ namespace Piece_n
       // - int&, the new position's y coordinate
       // \Returns
       // - bool, true on a success, false o/w
-      bool setPosition(const int& new_position_x, const int& new_position_y);
+      bool setPosition(const std::pair<int, int>& new_position);
 
       // \Name: getDirection
       // \Description:
@@ -133,7 +133,7 @@ namespace Piece_n
       // - int&, the proposed deployment position's y coordinate
       // \Returns
       // - bool, true if the deployment is valid; false o/w
-      bool isValidDeployment(const int& deploy_x, const int& deploy_y);
+      bool isValidDeployment(const std::pair<int, int>& deploy_position);
 
       // \Name: isValidMove
       // \Description:
