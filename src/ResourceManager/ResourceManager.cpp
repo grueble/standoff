@@ -5,8 +5,6 @@ using namespace ResourceManager_n;
 ResourceManager_c::ResourceManager_c(SDL_Renderer* renderer)
 {
    gRenderer = renderer;
-
-   loadTextures();
 }
 
 ResourceManager_c::~ResourceManager_c()
@@ -61,7 +59,7 @@ bool ResourceManager_c::loadTextures()
    {
       std::string path_to_image = PATH_TO_ASSETS + it->second;
 
-      loaded_texture = IMG_LoadTexture(path_to_image.c_str());
+      loaded_texture = IMG_LoadTexture(gRenderer, path_to_image.c_str());
 
       if (loaded_texture == NULL)
       {

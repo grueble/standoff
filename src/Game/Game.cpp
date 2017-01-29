@@ -23,10 +23,10 @@ Game_c::~Game_c()
 void Game_c::move(const std::pair<int, int>& screen_tile_coord)
 {
    // if the mouse click event's "screen tile" coordinate is within the board's bounds...
-   if (screen_tile_x_coord >= BOARD_COORD &&
-       screen_tile_x_coord <= BOARD_COORD + BOARD_SIDE_LENGTH &&
-       screen_tile_y_coord >= BOARD_COORD &&
-       screen_tile_y_coord >= BOARD_COORD + BOARD_SIDE_LENGTH)
+   if (screen_tile_coord.first >= BOARD_COORD.first &&
+       screen_tile_coord.first <= BOARD_COORD.first + BOARD_SIDE_LENGTH &&
+       screen_tile_coord.second >= BOARD_COORD.second &&
+       screen_tile_coord.second >= BOARD_COORD.second + BOARD_SIDE_LENGTH)
    {
       mMovedPiece = mCurrentPiece;
 
@@ -108,9 +108,9 @@ Piece_n::Piece_c& Game_c::getCurrentPiece()
    return mCurrentPiece;
 }
 
-void Game_c::emptyCurrentPiece()
+void Game_c::setCurrentPiece(Piece_n::Piece_c& piece)
 {
-   mCurrentPiece = NULL;
+   mCurrentPiece = &piece;
 }
 
 const std::vector<Piece_n::Piece_c>& Game_c::getPlayer1Pieces()

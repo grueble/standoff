@@ -9,15 +9,15 @@ int main(int argc, char* argv[])
    // the game instance
    StandoffApp_n::StandoffApp_c standoff_app;
 
-   if (!standoff_app.loadMedia())
+   if (!standoff_app.init())
    {
-      printf("Failed to load media!\n");
+      printf("Failed to initialize application!\n");
    }
    else
    {
-      if (!standoff_app.init())
+      if (!standoff_app.loadMedia())
       {
-         printf("Failed to initialize application!\n");
+         printf("Failed to load media!\n");
       }
       else 
       {

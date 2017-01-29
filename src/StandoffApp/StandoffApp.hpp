@@ -9,16 +9,16 @@
 namespace StandoffApp_n
 {
    // screen dimension constants
-   static const int SCREEN_WIDTH = Game_n::TILE_WIDTH * 11;
-   static const int SCREEN_HEIGHT = Game_n::TILE_WIDTH * 17;
+   static const int SCREEN_WIDTH = Game_n::TILE_WIDTH * 19;
+   static const int SCREEN_HEIGHT = Game_n::TILE_WIDTH * 11;
 
    // board render destination
    static const SDL_Rect board_dest = 
       { 
-         Game_n::BOARD_COORD.x * Game_n::TILE_WIDTH,
-         Game_n::BOARD_COORD.x * Game_n::TILE_WIDTH,
+         Game_n::BOARD_COORD.first * Game_n::TILE_WIDTH,
+         Game_n::BOARD_COORD.first * Game_n::TILE_WIDTH,
          Game_n::BOARD_SIDE_LENGTH * Game_n::TILE_WIDTH,
-         Game_n::BOARD_SIDE_LENGTH * Game_n::TILE_WIDTH \
+         Game_n::BOARD_SIDE_LENGTH * Game_n::TILE_WIDTH
       };
 
    enum DrawType_e
@@ -128,7 +128,7 @@ namespace StandoffApp_n
       // - const std::pair<int, int>&, the screen tile position
       // \Returns
       // - SDL_Texture*, pointer to the desired texture
-      SDL_Texture* StandoffApp_c::getTileBaseTexture(const std::pair<int, int>& tile_position)
+      SDL_Texture* StandoffApp_c::getTileBaseTexture(const std::pair<int, int>& tile_position);
 
       // the window to render to
       SDL_Window* gWindow = NULL;

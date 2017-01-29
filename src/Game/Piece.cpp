@@ -11,13 +11,37 @@ Piece_c::Piece_c(const PieceType_e& piece_type, const std::pair<int, int> reserv
    mPlayState(PlayState_e::RESERVE),
    mTeam(team)
 {
-   if (piece_type == PAWN)
+   bool pawnFlag = false;
+   if (mPiecetype == PAWN)
    {
-      mDeploymentZones = PAWN_DEPLOYMENT_ZONES;  
+      pawnFlag = true;
    }
    else
    {
-      mDeploymentZones = GUNSLINGER_DEPLOYMENT_ZONES;
+      std::vector<std::pair<int, int> pawn_zones;
+
+      if (mTeam == PLAYER_ONE)
+      {
+         pawn_zones =
+            PLAYER_ONE_GUNSLINGER_DEPLOYMENT_ZONES.insert(PLAYER_ONE_GUNSLINGER_DEPLOYMENT_ZONES.end(),
+                                                          PLAYER_ONE_PAWN_DEPLOYMENT_ZONES.begin(),
+                                                          PLAYER_ONE_PAWN_DEPLOYMENT_ZONES.end());
+
+         mDeploymentZones = pawnFlag ? 
+                            pawn_zones :
+                            &PLAYER_ONE_GUNSLINGER_DEPLOYMENT_ZONES;
+      }
+      else //mTeam = PLAYER_TWO
+      {
+         pawn_zones =
+            PLAYER_TWO_GUNSLINGER_DEPLOYMENT_ZONES.insert(PLAYER_TWO_GUNSLINGER_DEPLOYMENT_ZONES.end(),
+                                                          PLAYER_TWO_PAWN_DEPLOYMENT_ZONES.begin(),
+                                                          PLAYER_TWO_PAWN_DEPLOYMENT_ZONES.end());
+
+         mDeploymentZones = pawnFlag ? 
+                            pawn_zones :
+                            &PLAYER_TWO_GUNSLINGER_DEPLOYMENT_ZONES;
+      }
    }
 }
 

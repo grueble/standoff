@@ -59,21 +59,7 @@ bool StandoffApp_c::loadMedia()
 
    mResourceManager = ResourceManager_n::ResourceManager_c(gRenderer);
 
-   if (!mResourceManager)
-   {
-      printf("Failed to initialize the resource manager!\n");
-      success = false;
-   }
-   else
-   {
-      if (!mResourceManager->loadTextures())
-      {
-         printf("Failed to load image files!\n");
-         success = false;
-      }
-   }
-
-   return success;
+   return mResourceManager.loadTextures();
 }
 
 int StandoffApp_c::run()
@@ -112,7 +98,7 @@ int StandoffApp_c::run()
                // user presses LMB
                if (e.button == SDL_BUTTON_LEFT)
                {
-                  this->handleLmbDown(e, game);
+                  this->handleLmbDown(e, mCurrentGame);
                }
                else
                {
@@ -122,7 +108,7 @@ int StandoffApp_c::run()
             // user presses a key
             case SDL_KEYDOWN :
             {
-               this->handleKeyDown(e, game);
+               this->handleKeyDown(e, mCurrentGame);
             }
          }
       }
@@ -164,8 +150,8 @@ void StandoffApp_c::handleLmbDown(const SDL_Event& e)
     * or in play) to determine if the mouse click event selects a piece
     */
    std::vector<Piece_n::Piece_c>& pieces = mCurrentGame.getCurrentPlayer().mPieces; 
-   std::std::vector<Piece_n::Piece_c>::iterator it;
-   for (it = pieces.being(); it != pieces.end(); ++it)
+   std::vector<Piece_n::Piece_c>::iterator it;
+   for (it = pieces.begin(); it != pieces.end(); ++it)
    {
       if (mCurrentGame.getCurrentPiece().getPosition() == screen_tile_coord &&
           it->getCurrentPiece().getPlayState() != Piece_n::DEAD)
@@ -199,7 +185,7 @@ void StandoffApp_c::handleKeyDown(const SDL_Event& e)
                draw(DrawType_e::SHOOTOUT);
             }
 
-            mCurrentGame.emptyCurrentPiece();
+            mCurrentGame.setCurrentPiece(NULL);;
             mCurrentGame.revertMove();
             mCurrentGame.nextPlayer();
          }
@@ -212,7 +198,7 @@ void StandoffApp_c::handleKeyDown(const SDL_Event& e)
       {
          draw(DrawType_e::UNDO_MOVE);
 
-         mCurrentGame.emptyCurrentPiece();
+         mCurrentGame.setCurrentPiece(NULL);;
          mCurrentGame.revertMove();
       }
       case SDLK_SPACE :

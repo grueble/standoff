@@ -10,11 +10,11 @@
 namespace Game_n
 {
    // the width of (both) the border tiles (and the margin)
-   static const int TILE_WIDTH = 60; 
+   static const int TILE_WIDTH = 36; 
 
    // the board's upper left hand corner in "screen tile" coordinates
    // -> the window's upper left hand corner is at (0, 0)
-   static const std::pair<int,int> BOARD_COORD = std::make_pair(1, 4); 
+   static const std::pair<int,int> BOARD_COORD = std::make_pair(1, 5); 
 
    // starting "screen tile" coordinates for reserve piece positions
    static const std::pair<int,int> PLAYER_1_RESERVE_COORD = std::make_pair(9, 14);
@@ -92,16 +92,16 @@ namespace Game_n
       // - none
       // \Returns
       // - Piece_c&, the currently selected piece
-      Piece_c& getCurrentPiece();
+      Piece_n::Piece_c& getCurrentPiece();
 
-      // \Name: emptyCurrentPiece
+      // \Name: setCurrentPiece
       // \Description:
       // - sets the currently seleced piece
       // \Argument:
       // - Piece_c&, the piece to set as current
       // \Returns
       // - none
-      void emptyCurrentPiece();
+      void setCurrentPiece(Piece_n::Piece_c& piece);
 
       // \Name: getPlayer1Pieces
       // \Description:
