@@ -13,7 +13,7 @@ namespace StandoffApp_n
    static const int SCREEN_HEIGHT = Game_n::TILE_WIDTH * 11;
 
    // board render destination
-   static const SDL_Rect board_dest = 
+   static const SDL_Rect BOARD_DEST = 
       { 
          Game_n::BOARD_COORD.first * Game_n::TILE_WIDTH,
          Game_n::BOARD_COORD.first * Game_n::TILE_WIDTH,
@@ -100,7 +100,7 @@ namespace StandoffApp_n
       // - DrawType_e&, the type of draw action to perform
       // \Returns
       // - void
-      void draw(DrawType_e& draw_action);
+      void draw(const DrawType_e& draw_action);
 
       // \Name: draw
       // \Description:
@@ -140,10 +140,10 @@ namespace StandoffApp_n
       SDL_Texture* gTexture = NULL;
 
       // bulk loads assets and manages them for the client
-      ResourceManager_n::ResourceManager_c mResourceManager;
+      ResourceManager_n::ResourceManager_c* mResourceManager;
 
       // the current game instance
-      Game_n::Game_c mCurrentGame;
+      Game_n::Game_c* mCurrentGame;
    };
 }
 

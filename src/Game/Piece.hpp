@@ -68,19 +68,22 @@ namespace Piece_n
       // \Parameters:
       // - Piecetype_e& the type of Piece to create
       // - std::vector<std::pair<int, int>>& a list of valid deployments for this Piece
-      Piece_c(const PieceType_e& piece_type); 
+      Piece_c(const PieceType_e& piece_type,
+              const std::vector<std::pair<int, int>>& deployment_zones,
+              const std::pair<int, int> reserve_position,
+              const Team_e& team);
 
       // default destructor
       ~Piece_c();
 
-      // \Name: getPiece_type
+      // \Name: getPieceType
       // \Description:
       // - returns the mPieceType member field
       // \Argument:
       // - none
       // \Returns
       // - PieceType_& this Piece's type
-      const PieceType_e& getPieceType();
+      const PieceType_e& getPieceType() const;
 
       // \Name: getPosition
       // \Description:
@@ -99,7 +102,7 @@ namespace Piece_n
       // - int&, the new position's y coordinate
       // \Returns
       // - bool, true on a success, false o/w
-      bool setPosition(const std::pair<int, int>& new_position);
+      void setPosition(const std::pair<int, int>& new_position);
 
       // \Name: getDirection
       // \Description:
@@ -108,7 +111,7 @@ namespace Piece_n
       // - none
       // \Returns
       // - Direction_e, this Piece's direction
-      const Direction_e& getDirection();
+      const Direction_e& getDirection() const;
 
       // \Name: setDirection
       // \Description:
@@ -117,7 +120,7 @@ namespace Piece_n
       // - Direction_e, the new direction to set
       // \Returns
       // - bool, true on a success, false o/w 
-      bool setDirection(const Direction_e& new_direction);
+      void setDirection(const Direction_e& new_direction);
 
       // \Name: getPlayState
       // \Description:
@@ -137,6 +140,15 @@ namespace Piece_n
       // - none
       void nextPlayState();
 
+      // \Name: getTeam
+      // \Description:
+      // - returns the mPieceType member field
+      // \Argument:
+      // - none
+      // \Returns
+      // - PieceType_& this Piece's type
+      const Team_e& getTeam() const;
+
       // \Name: isValidDeployment
       // \Description:
       // - determines if the input deployment is valid
@@ -149,13 +161,13 @@ namespace Piece_n
 
       // \Name: isValidMove
       // \Description:
-      // - returns the address of this player's reserve pieces
+      // - determines if the input move is valid
       // \Argument:
       // - int&, the proposed move position's x coordinate
       // - int&, the proposed move position's y coordinate
       // \Returns
       // - bool, true if the move is valid; false o/w
-      // bool isValidMove(const int& move_x, const int& move_y);
+      // bool isValidMove(const std::pair<int, int>& move_position);
 
    private:
       // this Piece's type
@@ -175,7 +187,7 @@ namespace Piece_n
       // stores a Piece's available deployment zones
       // -> these are initialized differently based on PieceType
       // -> reference to one of three shared deployment zone vectors in Game_c
-      std::vector<std::pair<int, int>>& mDeploymentZones;
+      std::vector<std::pair<int, int>> mDeploymentZones;
 
       // this Piece's current in-play status
       PlayState_e mPlayState;

@@ -15,15 +15,18 @@ namespace ResourceManager_n
    enum ImageType_e
    {
       BOARD,
+      BORDER,
       EMPTY_TILE,
-      SCORING_TILE,
-      MANHOLE,
-      PINK_PAWN,
-      PINK_GUN,
-      PINK_SLINGER,
-      GREEN_PAWN,
-      GREEN_GUN,
-      GREEN_SLINGER,
+      P1_SCORING_TILE,
+      P1_MANHOLE,
+      P1_PAWN,
+      P1_GUN,
+      P1_SLINGER,
+      P2_SCORING_TILE,
+      P2_MANHOLE,
+      P2_PAWN,
+      P2_GUN,
+      P2_SLINGER,
       CURSOR,
       BRIEFCASE
    };

@@ -4,52 +4,25 @@
 
 using namespace Piece_n;
 
-Piece_c::Piece_c(const PieceType_e& piece_type, const std::pair<int, int> reserve_position) :
+Piece_c::Piece_c(const PieceType_e& piece_type, 
+                 const std::vector<std::pair<int,int>>& deployment_zones,
+                 const std::pair<int, int> reserve_position,
+                 const Team_e& team) :
    mPieceType(piece_type),
    mPosition(reserve_position),
    mDirection(Direction_e::NONE),
+   mDeploymentZones(deployment_zones),
    mPlayState(PlayState_e::RESERVE),
    mTeam(team)
 {
-   bool pawnFlag = false;
-   if (mPiecetype == PAWN)
-   {
-      pawnFlag = true;
-   }
-   else
-   {
-      std::vector<std::pair<int, int> pawn_zones;
-
-      if (mTeam == PLAYER_ONE)
-      {
-         pawn_zones =
-            PLAYER_ONE_GUNSLINGER_DEPLOYMENT_ZONES.insert(PLAYER_ONE_GUNSLINGER_DEPLOYMENT_ZONES.end(),
-                                                          PLAYER_ONE_PAWN_DEPLOYMENT_ZONES.begin(),
-                                                          PLAYER_ONE_PAWN_DEPLOYMENT_ZONES.end());
-
-         mDeploymentZones = pawnFlag ? 
-                            pawn_zones :
-                            &PLAYER_ONE_GUNSLINGER_DEPLOYMENT_ZONES;
-      }
-      else //mTeam = PLAYER_TWO
-      {
-         pawn_zones =
-            PLAYER_TWO_GUNSLINGER_DEPLOYMENT_ZONES.insert(PLAYER_TWO_GUNSLINGER_DEPLOYMENT_ZONES.end(),
-                                                          PLAYER_TWO_PAWN_DEPLOYMENT_ZONES.begin(),
-                                                          PLAYER_TWO_PAWN_DEPLOYMENT_ZONES.end());
-
-         mDeploymentZones = pawnFlag ? 
-                            pawn_zones :
-                            &PLAYER_TWO_GUNSLINGER_DEPLOYMENT_ZONES;
-      }
-   }
+   
 }
 
 Piece_c::~Piece_c()
 {
 }
 
-const PieceType_e& Piece_c::getPieceType()
+const PieceType_e& Piece_c::getPieceType() const
 {
    return mPieceType;
 }
@@ -59,7 +32,7 @@ const std::pair<int, int>& Piece_c::getPosition()
    return mPosition;
 }
 
-void Piece_c::setPosition(const std::pair<int, int>& new_position) 
+void Piece_c::setPosition(const std::pair<int, int>& new_position)
 {
    switch (mPlayState)
    {
@@ -77,14 +50,8 @@ void Piece_c::setPosition(const std::pair<int, int>& new_position)
       }
       case LIVE :
       {
-         if (this->isValidMove(new_position))
-         {
-            mPosition = new_position;
-         }
-         else
-         {
-            // invalid move
-         }  
+         // move validity is checked by the caller
+         mPosition = new_position;
          break;
       }
 
@@ -98,7 +65,7 @@ void Piece_c::setPosition(const std::pair<int, int>& new_position)
    }
 }
 
-const Direction_e& Piece_c::getDirection()
+const Direction_e& Piece_c::getDirection() const
 {
    return mDirection;
 }
@@ -142,12 +109,17 @@ void Piece_c::nextPlayState()
    }
 }
 
+const Team_e& Piece_c::getTeam() const
+{
+   return mTeam;
+}
+
 bool Piece_c::isValidDeployment(const std::pair<int, int>& deploy_position)
 {
    std::vector<std::pair<int, int>>::iterator it;
    for (it = mDeploymentZones.begin(); it != mDeploymentZones.end(); ++it)
    {
-      if (*it = deploy_position)
+      if (deploy_position == *it)
       {
          return true;
       }

@@ -23,6 +23,11 @@ namespace Game_n
    // the board's side length
    static const int BOARD_SIDE_LENGTH = 9;
 
+   // piece totals
+   static const int NUM_PAWNS = 4;
+   static const int NUM_GUNS = 6;
+   static const int NUM_SLINGERS = 2;
+
    // stores all of the data about a player
    struct Player_s
    {
@@ -56,7 +61,7 @@ namespace Game_n
       // - Direction
       // \Returns
       // - bool, true if the rotation is successful, false o/w
-      bool rotate(const Piece_n::Direction_e& rotate_direction);
+      void rotate(const Piece_n::Direction_e& rotate_direction);
 
       // \Name: shootout
       // \Description:
@@ -92,7 +97,7 @@ namespace Game_n
       // - none
       // \Returns
       // - Piece_c&, the currently selected piece
-      Piece_n::Piece_c& getCurrentPiece();
+      Piece_n::Piece_c* getCurrentPiece();
 
       // \Name: setCurrentPiece
       // \Description:
@@ -102,6 +107,15 @@ namespace Game_n
       // \Returns
       // - none
       void setCurrentPiece(Piece_n::Piece_c& piece);
+
+      // \Name: emptyCurrentPiece
+      // \Description:
+      // - empty the currently seleced piece
+      // \Argument:
+      // - none
+      // \Returns
+      // - none
+      void emptyCurrentPiece();
 
       // \Name: getPlayer1Pieces
       // \Description:
@@ -128,7 +142,7 @@ namespace Game_n
       // - none
       // \Returns
       // - none
-      const Piece_n::Piece_c& getMovedPiece();
+      Piece_n::Piece_c& getMovedPiece();
 
       // \Name: getPreMovePieceState
       // \Description:
@@ -137,7 +151,7 @@ namespace Game_n
       // - none
       // \Returns
       // - none
-      const Piece_n::Piece_c& getPreMovePieceState();
+      Piece_n::Piece_c& getPreMovePieceState();
 
       // \Name: revertMove
       // \Description:
@@ -166,6 +180,15 @@ namespace Game_n
       // - none
       void setShootoutFlag();
 
+      // \Name: gameOver
+      // \Description:
+      // - checks for a win state from either player
+      // \Argument:
+      // - none
+      // \Returns
+      // - bool, true if the current player is the winner
+      bool gameOver();
+
    protected:
       // \Name: initPieces
       // \Description:
@@ -177,15 +200,6 @@ namespace Game_n
       // - none
       void initPieces(Player_s& player, bool player1);
 
-      // \Name: destroyPieces
-      // \Description:
-      // - frees a player's pieces
-      // \Argument:
-      // - Player_s& the player to destroy pieces for
-      // \Returns
-      // - none
-      void destroyPieces(Player_s& player);
-
       // \Name: detectHit
       // \Description:
       // - determines if a piece hits during a shootout
@@ -193,16 +207,9 @@ namespace Game_n
       // - none
       // \Returns
       // - none     
-      void detectHit(); 
-
-      // \Name: gameOver
-      // \Description:
-      // - checks for a win state from either player
-      // \Argument:
-      // - none
-      // \Returns
-      // - bool, true if the current player is the winner
-      bool gameOver();
+      void detectHit(Piece_n::Piece_c& piece,
+                     std::vector<Piece_n::Piece_c>& pieces,
+                     std::vector<Piece_n::Piece_c>& hit_pieces);
 
       // stores the app's ResourceManager_c
       ResourceManager_n::ResourceManager_c mResourceManager;
@@ -221,7 +228,7 @@ namespace Game_n
       Piece_n::Piece_c* mMovedPiece;
 
       // stores the previous state of the piece staged for moving (in case a revert is needed)
-      Piece_n::Piece_c mPreMovePieceState;
+      Piece_n::Piece_c* mPreMovePiece;
 
       // true if a shootout has been called, false o/w
       bool mShootoutFlag;
