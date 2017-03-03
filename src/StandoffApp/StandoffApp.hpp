@@ -2,25 +2,11 @@
 #define _STANDOFF_APP_HPP_
 
 #include <SDL.h>
-#include <utility>
 #include "Game/Game.hpp"
 #include "ResourceManager/ResourceManager.hpp"
 
 namespace StandoffApp_n
 {
-   // screen dimension constants
-   static const int SCREEN_WIDTH = Game_n::TILE_WIDTH * 19;
-   static const int SCREEN_HEIGHT = Game_n::TILE_WIDTH * 11;
-
-   // board render destination
-   static const SDL_Rect BOARD_DEST = 
-      { 
-         Game_n::BOARD_COORD.first * Game_n::TILE_WIDTH,
-         Game_n::BOARD_COORD.first * Game_n::TILE_WIDTH,
-         Game_n::BOARD_SIDE_LENGTH * Game_n::TILE_WIDTH,
-         Game_n::BOARD_SIDE_LENGTH * Game_n::TILE_WIDTH
-      };
-
    enum DrawType_e
    {
       START = 0,
@@ -112,15 +98,6 @@ namespace StandoffApp_n
       // - void
       void drawMove(const std::pair<int, int>& move_position, const std::pair<int, int>& empty_position);
 
-      // \Name: getImage
-      // \Description:
-      // - gets an image of the parameterized ImageType_e
-      // \Argument:
-      // - ImageType_e, the image to get
-      // \Returns
-      // - SDL_Texture*, pointer to the desired texture
-      SDL_Texture* getImage(ResourceManager_n::ImageType_e image_type);
-
       // \Name: getTileBaseTexture
       // \Description:
       // - gets the base texture of a particular screen tile
@@ -128,7 +105,7 @@ namespace StandoffApp_n
       // - const std::pair<int, int>&, the screen tile position
       // \Returns
       // - SDL_Texture*, pointer to the desired texture
-      SDL_Texture* StandoffApp_c::getTileBaseTexture(const std::pair<int, int>& tile_position);
+      void StandoffApp_c::renderTileBaseSprite(const std::pair<int, int>& tile_position, SDL_Rect& dest_rect);
 
       // the window to render to
       SDL_Window* gWindow = NULL;
@@ -140,10 +117,10 @@ namespace StandoffApp_n
       SDL_Texture* gTexture = NULL;
 
       // bulk loads assets and manages them for the client
-      ResourceManager_n::ResourceManager_c* mResourceManager;
+      ResourceManager_n::ResourceManager_c* mResourceManager = NULL;
 
       // the current game instance
-      Game_n::Game_c* mCurrentGame;
+      Game_n::Game_c* mCurrentGame = NULL;
    };
 }
 

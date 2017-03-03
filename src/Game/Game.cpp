@@ -5,8 +5,8 @@
 
 using namespace Game_n;
 
-Game_c::Game_c(const ResourceManager_n::ResourceManager_c& resource_manager) :
-   mResourceManager(resource_manager),
+Game_c::Game_c() : //  const ResourceManager_n::ResourceManager_c& resource_manager) :
+   // mResourceManager(resource_manager),
    mCurrentPlayer(mPlayer1),
    mShootoutFlag(false)
 {
@@ -93,6 +93,8 @@ Player_s& Game_c::getCurrentPlayer()
 
 void Game_c::nextPlayer()
 {
+   mCurrentPiece = NULL;
+
    // if the addresses are equal
    if (&mCurrentPlayer == &mPlayer1)
    {
@@ -141,6 +143,8 @@ Piece_n::Piece_c& Game_c::getPreMovePieceState()
 
 void Game_c::revertMove()
 {
+   mCurrentPiece = NULL;
+
    // copy constructor
    mMovedPiece = &Piece_n::Piece_c(*mPreMovePiece);
    mPreMovePiece = NULL;
@@ -161,14 +165,14 @@ void Game_c::initPieces(Player_s& player, bool player1)
    if (player1)
    {
       // initialize the player's starting reserve position (screen tile coordinates)
-      std::pair<int, int> reserve_position = PLAYER_1_RESERVE_COORD;
+      std::pair<int, int> reserve_position = P1_RESERVE_COORD;
 
       // add pawns
       for (int i = 0; i < NUM_PAWNS; ++i)
       {
          Piece_n::Piece_c* new_pawn = 
             new Piece_n::Piece_c(Piece_n::PAWN,
-                                 Piece_n::PLAYER_ONE_PAWN_DEPLOYMENT_ZONES,
+                                 Piece_n::P1_PAWN_DEPLOYMENT_ZONES,
                                  reserve_position,
                                  Piece_n::PLAYER_ONE);
          player.mPieces.push_back(*new_pawn);
@@ -176,7 +180,7 @@ void Game_c::initPieces(Player_s& player, bool player1)
       }
 
       // place guns on a new row
-      reserve_position = PLAYER_1_RESERVE_COORD;
+      reserve_position = P1_RESERVE_COORD;
       reserve_position.second++;
 
       // add guns
@@ -184,7 +188,7 @@ void Game_c::initPieces(Player_s& player, bool player1)
       {
          Piece_n::Piece_c* new_gun = 
             new Piece_n::Piece_c(Piece_n::GUN,
-                                 Piece_n::PLAYER_ONE_GUNSLINGER_DEPLOYMENT_ZONES,
+                                 Piece_n::P1_GUNSLINGER_DEPLOYMENT_ZONES,
                                  reserve_position,
                                  Piece_n::PLAYER_ONE);
          player.mPieces.push_back(*new_gun);
@@ -192,7 +196,7 @@ void Game_c::initPieces(Player_s& player, bool player1)
       }
 
       // place slingers on a new row
-      reserve_position = PLAYER_1_RESERVE_COORD;
+      reserve_position = P1_RESERVE_COORD;
       reserve_position.second = reserve_position.second + 2;
 
       // add slingers
@@ -200,7 +204,7 @@ void Game_c::initPieces(Player_s& player, bool player1)
       {
          Piece_n::Piece_c* new_slinger = 
             new Piece_n::Piece_c(Piece_n::SLINGER,
-                                 Piece_n::PLAYER_ONE_GUNSLINGER_DEPLOYMENT_ZONES,
+                                 Piece_n::P1_GUNSLINGER_DEPLOYMENT_ZONES,
                                  reserve_position,
                                  Piece_n::PLAYER_ONE);
          player.mPieces.push_back(*new_slinger);
@@ -210,22 +214,22 @@ void Game_c::initPieces(Player_s& player, bool player1)
    else //player2
    {
       // initialize the player's starting reserve position (screen tile coordinates)
-      std::pair<int, int> reserve_position = PLAYER_2_RESERVE_COORD;
+      std::pair<int, int> reserve_position = P2_RESERVE_COORD;
 
       // add pawns
       for (int i = 0; i < NUM_PAWNS; ++i)
       {
          Piece_n::Piece_c* new_pawn =
             new Piece_n::Piece_c(Piece_n::PAWN,
-               Piece_n::PLAYER_TWO_PAWN_DEPLOYMENT_ZONES,
-               reserve_position,
-               Piece_n::PLAYER_TWO);
+                                 Piece_n::P2_PAWN_DEPLOYMENT_ZONES,
+                                 reserve_position,
+                                 Piece_n::PLAYER_TWO);
          player.mPieces.push_back(*new_pawn);
          reserve_position.first++;
       }
 
       // place guns on a new row
-      reserve_position = PLAYER_2_RESERVE_COORD;
+      reserve_position = P2_RESERVE_COORD;
       reserve_position.second--;
 
       // add guns
@@ -233,15 +237,15 @@ void Game_c::initPieces(Player_s& player, bool player1)
       {
          Piece_n::Piece_c* new_gun =
             new Piece_n::Piece_c(Piece_n::GUN,
-               Piece_n::PLAYER_TWO_GUNSLINGER_DEPLOYMENT_ZONES,
-               reserve_position,
-               Piece_n::PLAYER_TWO);
+                                 Piece_n::P2_GUNSLINGER_DEPLOYMENT_ZONES,
+                                 reserve_position,
+                                 Piece_n::PLAYER_TWO);
          player.mPieces.push_back(*new_gun);
          reserve_position.first++;
       }
 
       // place slingers on a new row
-      reserve_position = PLAYER_2_RESERVE_COORD;
+      reserve_position = P2_RESERVE_COORD;
       reserve_position.second = reserve_position.second - 2;
 
       // add slingers
@@ -249,9 +253,9 @@ void Game_c::initPieces(Player_s& player, bool player1)
       {
          Piece_n::Piece_c* new_slinger =
             new Piece_n::Piece_c(Piece_n::SLINGER,
-               Piece_n::PLAYER_TWO_GUNSLINGER_DEPLOYMENT_ZONES,
-               reserve_position,
-               Piece_n::PLAYER_TWO);
+                                 Piece_n::P2_GUNSLINGER_DEPLOYMENT_ZONES,
+                                 reserve_position,
+                                 Piece_n::PLAYER_TWO);
          player.mPieces.push_back(*new_slinger);
          reserve_position.first++;
       }

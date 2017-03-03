@@ -1,32 +1,31 @@
 #ifndef _GAME_HPP_
 #define _GAME_HPP_
 
-#include <map>
 #include <utility>
 
 #include "Piece.hpp"
-#include "ResourceManager/ResourceManager.hpp"
 
 namespace Game_n
 {
-   // the width of (both) the border tiles (and the margin)
-   static const int TILE_WIDTH = 36; 
-
    // the board's upper left hand corner in "screen tile" coordinates
    // -> the window's upper left hand corner is at (0, 0)
-   static const std::pair<int,int> BOARD_COORD = std::make_pair(1, 5); 
+   static const std::pair<int,int>& BOARD_COORD = std::make_pair(1, 5); 
 
    // starting "screen tile" coordinates for reserve piece positions
-   static const std::pair<int,int> PLAYER_1_RESERVE_COORD = std::make_pair(9, 14);
-   static const std::pair<int,int> PLAYER_2_RESERVE_COORD = std::make_pair(1, 3);
+   static const std::pair<int,int>& P1_RESERVE_COORD = std::make_pair(9, 15);
+   static const std::pair<int,int>& P2_RESERVE_COORD = std::make_pair(1, 3);
+
+   // scoring "screen tile" coordinates
+   static const std::pair<int, int>& P1_SCORING_COORD = std::make_pair(9, 13);
+   static const std::pair<int, int>& P2_SCORING_COORD = BOARD_COORD;
 
    // the board's side length
-   static const int BOARD_SIDE_LENGTH = 9;
+   static const int& BOARD_SIDE_LENGTH = 9;
 
    // piece totals
-   static const int NUM_PAWNS = 4;
-   static const int NUM_GUNS = 6;
-   static const int NUM_SLINGERS = 2;
+   static const int& NUM_PAWNS = 4;
+   static const int& NUM_GUNS = 6;
+   static const int& NUM_SLINGERS = 2;
 
    // stores all of the data about a player
    struct Player_s
@@ -39,7 +38,7 @@ namespace Game_n
    {
    public:
       // constructor
-      Game_c(const ResourceManager_n::ResourceManager_c& resource_manager);
+      Game_c(); // const ResourceManager_n::ResourceManager_c& resource_manager);
 
       // default destructor
       ~Game_c();
@@ -212,7 +211,7 @@ namespace Game_n
                      std::vector<Piece_n::Piece_c>& hit_pieces);
 
       // stores the app's ResourceManager_c
-      ResourceManager_n::ResourceManager_c mResourceManager;
+      // ResourceManager_n::ResourceManager_c mResourceManager;
 
       // stores references to the two Player_s objects initialized on construction
       Player_s mPlayer1;

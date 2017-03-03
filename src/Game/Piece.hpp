@@ -6,24 +6,24 @@
 
 namespace Piece_n
 {
-   static const std::vector<std::pair<int, int>> PLAYER_ONE_GUNSLINGER_DEPLOYMENT_ZONES = 
+   static const std::vector<std::pair<int, int>> P1_GUNSLINGER_DEPLOYMENT_ZONES = 
    {
       std::make_pair(2, 13), std::make_pair(4, 13), std::make_pair(8, 13),
       std::make_pair(9, 6), std::make_pair(9, 8), std::make_pair(9, 12)
    };
 
-   static const std::vector<std::pair<int, int>> PLAYER_ONE_PAWN_DEPLOYMENT_ZONES = 
+   static const std::vector<std::pair<int, int>> P1_PAWN_DEPLOYMENT_ZONES = 
    {
       std::make_pair(5, 12), std::make_pair(6, 11), std::make_pair(7, 10), std::make_pair(8, 9) 
    };
 
-   static const std::vector<std::pair<int, int>> PLAYER_TWO_GUNSLINGER_DEPLOYMENT_ZONES = 
+   static const std::vector<std::pair<int, int>> P2_GUNSLINGER_DEPLOYMENT_ZONES = 
    {
       std::make_pair(1, 6), std::make_pair(1, 10), std::make_pair(1, 12), 
       std::make_pair(2, 5), std::make_pair(6, 5), std::make_pair(8, 5)
    };
 
-   static const std::vector<std::pair<int, int>> PLAYER_TWO_PAWN_DEPLOYMENT_ZONES = 
+   static const std::vector<std::pair<int, int>> P2_PAWN_DEPLOYMENT_ZONES = 
    {
       std::make_pair(2, 9), std::make_pair(3, 8), std::make_pair(4, 7), std::make_pair(5, 6)
    };

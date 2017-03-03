@@ -2,6 +2,7 @@
 #define _STANDOFF_MAIN_CPP_
 
 #include <cstdio>
+#include "iostream"
 #include "StandoffApp/StandoffApp.hpp"
 
 int main(int argc, char* argv[])
@@ -17,7 +18,7 @@ int main(int argc, char* argv[])
    {
       if (!standoff_app.loadMedia())
       {
-         printf("Failed to load media!\n");
+         printf("failed to load media!\n");
       }
       else 
       {

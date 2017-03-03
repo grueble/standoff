@@ -1,21 +1,32 @@
 #include "ResourceManager.hpp"
+#include "iostream"
 
 using namespace ResourceManager_n;
 
-ResourceManager_c::ResourceManager_c(SDL_Renderer* renderer)
+ResourceManager_c::ResourceManager_c(SDL_Renderer* renderer) :
+   mTextures(*new TextureMap())
 {
    gRenderer = renderer;
+   // mTextures = *new TextureMap();
 }
 
 ResourceManager_c::~ResourceManager_c()
 {
-   // free all textures
-   std::unordered_map<ImageType_e, SDL_Texture*>::iterator it;
-   for (it = mTextures.begin(); it != mTextures.end(); ++it)
+   // free all sprites
+   /*SpriteMap::iterator sprite_it;
+   for (sprite_it = mSprites.begin(); sprite_it != mSprites.end(); ++sprite_it)
    {
-      SDL_DestroyTexture(it->second);
-      it->second = NULL;
+      delete *it;
+   }*/
+
+   // free all textures
+   TextureMap::iterator texture_it;
+   for (texture_it = mTextures.begin(); texture_it != mTextures.end(); ++texture_it)
+   {
+      SDL_DestroyTexture(texture_it->get()->second);
    }
+
+   delete &mTextures;
 
    /* 
     * Cleans any memory dynamically allocated to the image loading process.
@@ -29,17 +40,26 @@ ResourceManager_c::~ResourceManager_c()
    IMG_Quit();
 }
 
-SDL_Texture* ResourceManager_c::getTexture(ImageType_e image_type)
+Sprite_s& ResourceManager_c::getSprite(ImageType_e image_type)
 {
-   // switch statement here to cover the different loaded images
+   std::cout << "mSprites is " << mSprites.size() << " long!" << std::endl;
+   std::cout << "mTextures is " << mTextures.size() << " long!" << std::endl;
 
-   TextureMap::const_iterator it = mTextures.find(image_type);
-   return it->second;
+   Sprite_s* sprite = NULL;
+   SpriteMap::iterator it;
+   /*for (it = mSprites.begin(); it != mSprites.end(); ++it)
+   {
+      if (it->get()->first == image_type)
+      {
+         sprite = &(it->get()->second);
+         break;
+      }
+   }*/
+   return *sprite;
 }
 
 bool ResourceManager_c::loadTextures()
 {
-   // loading success flag
    bool success = true;
 
    // initialize PNG loading
@@ -50,30 +70,27 @@ bool ResourceManager_c::loadTextures()
       success = false;
    }
 
-   // SDL_Surface* loaded_surface = NULL;
-
-   SDL_Texture* loaded_texture = NULL;
-
-   std::map<ImageType_e, std::string>::const_iterator it; 
-   for (it = ResourceManager_n::IMAGE_PATHS.begin(); it != ResourceManager_n::IMAGE_PATHS.end(); ++it)
+   std::vector<std::string>::const_iterator it; 
+   for (it = ResourceManager_n::IMG_PATHS.begin(); it != ResourceManager_n::IMG_PATHS.end(); ++it)
    {
-      std::string path_to_image = PATH_TO_ASSETS + it->second;
+      SDL_Texture* loaded_texture = NULL;
+      std::string img_path = PATH_TO_ASSETS + *it;
 
-      loaded_texture = IMG_LoadTexture(gRenderer, path_to_image.c_str());
+      loaded_texture = IMG_LoadTexture(gRenderer, img_path.c_str());
 
       if (loaded_texture == NULL)
-      {
-         printf( "Unable to load texture %s! SDL_image Error: %s\n", path_to_image.c_str(), IMG_GetError() );
+      { 
+         printf("Unable to load texture %s! SDL_image Error: %s\n", img_path.c_str(), IMG_GetError());
          success = false;
       }
-      else 
+      else
       {
-         // converted_texture = SDL_CreateTextureFromSurface(gRenderer, loaded_surface);
-
-         mTextures.insert(std::pair<ImageType_e, SDL_Texture*>(it->first, loaded_texture));
-
-         // SDL_FreeSurface(loaded_surface);
-         // loaded_surface = NULL;
+         std::cout << "DOGY" << std::endl;
+         std::unique_ptr<std::pair<const std::string&, SDL_Texture*>> ptr;
+         std::pair<const std::string&, SDL_Texture*> mapped_val = std::make_pair(*it, &(*loaded_texture));
+         mTextures.push_back());
+         std::cout << "Loading: " << img_path << std::endl;
+         // loadSprites(*it, *loaded_texture);
       }
    }
 
@@ -81,4 +98,100 @@ bool ResourceManager_c::loadTextures()
    // IMG_Quit()
 
    return success;
+}
+
+void ResourceManager_c::loadSprites(const std::string& img_path, SDL_Texture& spritesheet)
+{
+   SDL_Rect clip;
+   Sprite_s* sprite = NULL;
+
+   if (img_path == "board.png")
+   {
+      sprite =  &Sprite_s(img_path, &spritesheet, NULL);
+      mSprites.push_back(std::make_unique<std::pair<ImageType_e, Sprite_s>>(BOARD, *sprite));
+   }
+   else if (img_path == "tiles.png")
+   {
+      // base tile
+      clip = { 0, 0, TILE_WIDTH , TILE_WIDTH };
+      sprite = &Sprite_s(img_path, &spritesheet, &clip);
+      mSprites.push_back(std::make_unique<std::pair<ImageType_e, Sprite_s>>(BASE_TILE, *sprite));
+
+      // edge tile
+      clip = { TILE_WIDTH, 0, TILE_WIDTH , TILE_WIDTH };
+      sprite = &Sprite_s(img_path, &spritesheet, &clip);
+      mSprites.push_back(std::make_unique<std::pair<ImageType_e, Sprite_s>>(EDGE_TILE, *sprite));
+
+      // corner tile
+      clip = { TILE_WIDTH * 2, 0, TILE_WIDTH , TILE_WIDTH };
+      sprite = &Sprite_s(img_path, &spritesheet, &clip);
+      mSprites.push_back(std::make_unique<std::pair<ImageType_e, Sprite_s>>(CORNER_TILE, *sprite));
+
+      // p1 scoring tile
+      clip = { 0, TILE_WIDTH, TILE_WIDTH , TILE_WIDTH };
+      sprite = &Sprite_s(img_path, &spritesheet, &clip);
+      mSprites.push_back(std::make_unique<std::pair<ImageType_e, Sprite_s>>(P1_SCORING_TILE, *sprite));
+
+      // p1 manhole tile
+      clip = { TILE_WIDTH, TILE_WIDTH, TILE_WIDTH , TILE_WIDTH };
+      sprite = &Sprite_s(img_path, &spritesheet, &clip);
+      mSprites.push_back(std::make_unique<std::pair<ImageType_e, Sprite_s>>(P1_MANHOLE_TILE, *sprite));
+
+      // p2 scoring tile
+      clip = { 0, TILE_WIDTH * 2, TILE_WIDTH , TILE_WIDTH };
+      sprite = &Sprite_s(img_path, &spritesheet, &clip);
+      mSprites.push_back(std::make_unique<std::pair<ImageType_e, Sprite_s>>(P2_SCORING_TILE, *sprite));
+
+      // p2 manhole tile
+      clip = { TILE_WIDTH, TILE_WIDTH * 2, TILE_WIDTH , TILE_WIDTH };
+      sprite = &Sprite_s(img_path, &spritesheet, &clip);
+      mSprites.push_back(std::make_unique<std::pair<ImageType_e, Sprite_s>>(P2_MANHOLE_TILE, *sprite));
+   }
+   //else if (img_path == "pieces.png")
+   //{
+   //   // p1 pawn
+   //   clip = { 0, 0, TILE_WIDTH , TILE_WIDTH };
+   //   sprite = &Sprite_s(img_path, &spritesheet, &clip);
+   //   mSprites.push_back(std::pair<ImageType_e, Sprite_s&>(P1_PAWN, *sprite));
+
+   //   // p1 gun
+   //   clip = { TILE_WIDTH, 0, TILE_WIDTH , TILE_WIDTH };
+   //   sprite = &Sprite_s(img_path, &spritesheet, &clip);
+   //   mSprites.push_back(std::pair<ImageType_e, Sprite_s&>(P1_GUN, *sprite));
+
+   //   // p1 slinger
+   //   clip = { TILE_WIDTH * 2, 0, TILE_WIDTH , TILE_WIDTH };
+   //   sprite = &Sprite_s(img_path, &spritesheet, &clip);
+   //   mSprites.push_back(std::pair<ImageType_e, Sprite_s&>(P1_SLINGER, *sprite));
+
+   //   // p2 pawn
+   //   clip = { 0, TILE_WIDTH, TILE_WIDTH , TILE_WIDTH };
+   //   sprite = &Sprite_s(img_path, &spritesheet, &clip);
+   //   mSprites.push_back(std::pair<ImageType_e, Sprite_s&>(P2_PAWN, *sprite));
+
+   //   // p2 gun
+   //   clip = { TILE_WIDTH, TILE_WIDTH, TILE_WIDTH , TILE_WIDTH };
+   //   sprite = &Sprite_s(img_path, &spritesheet, &clip);
+   //   mSprites.push_back(std::pair<ImageType_e, Sprite_s&>(P2_GUN, *sprite));
+
+   //   // p2 slinger
+   //   clip = { TILE_WIDTH * 2, TILE_WIDTH, TILE_WIDTH , TILE_WIDTH };
+   //   sprite = &Sprite_s(img_path, &spritesheet, &clip);
+   //   mSprites.push_back(std::pair<ImageType_e, Sprite_s&>(P2_SLINGER, *sprite));
+   //}
+   //else if (img_path == "special.png")
+   //{
+   //   // briefcase
+   //   clip = { 0, 0, TILE_WIDTH , TILE_WIDTH };
+   //   sprite = &Sprite_s(img_path, &spritesheet, &clip);
+   //   mSprites.push_back(std::pair<ImageType_e, Sprite_s&>(BRIEFCASE, *sprite));
+
+   //   // cursor
+   //   clip = { TILE_WIDTH, 0, TILE_WIDTH , TILE_WIDTH };
+   //   sprite = &Sprite_s(img_path, &spritesheet, &clip);
+   //   mSprites.push_back(std::pair<ImageType_e, Sprite_s&>(CURSOR, *sprite));
+   //}
+
+   std::cout << img_path << " successfully loaded..." << std::endl;
+   std::cout << "mSprites is " << mSprites.size() << " long!" << std::endl;
 }
