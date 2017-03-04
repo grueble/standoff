@@ -8,25 +8,26 @@
 int main(int argc, char* argv[])
 {
    // the game instance
-   StandoffApp_n::StandoffApp_c standoff_app;
+   ResourceManager_n::ResourceManager_c resource_manager;
 
-   if (!standoff_app.init())
+   if (!resource_manager.init())
    {
       printf("Failed to initialize application!\n");
    }
    else
    {
-      if (!standoff_app.loadMedia())
+      if (!resource_manager.loadMedia())
       {
          printf("failed to load media!\n");
       }
       else 
       {
+         StandoffApp_n::StandoffApp_c standoff_app(resource_manager);
          int exit_reason = standoff_app.run();
       }
    }
 
-   standoff_app.close();
+   resource_manager.close();
 
    return 0;
 }

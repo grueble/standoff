@@ -19,28 +19,10 @@ namespace StandoffApp_n
    {
    public:
       // constructor
-      StandoffApp_c();
+      StandoffApp_c(ResourceManager_n::ResourceManager_c& resource_manager);
 
       // default destructor
       ~StandoffApp_c();
-
-      // \Name: init
-      // \Description:
-      // - initializes the StandoffApp's SDL2 functionality
-      // \Argument:
-      // - none
-      // \Returns
-      // - bool, success of failure
-      bool init();
-
-      // \Name: loadMedia
-      // \Description:
-      // - initializes the resource manager
-      // \Argument:
-      // - none
-      // \Returns
-      // - bool, success or failure
-      bool loadMedia();
 
       // \Name: run
       // \Description:
@@ -50,15 +32,6 @@ namespace StandoffApp_n
       // \Returns
       // - none
       int run();
-
-      // \Name: close
-      // \Description:
-      // - closes the Standoff (client) Application
-      // \Argument:
-      // - none
-      // \Returns
-      // - none
-      void close();
 
    protected:
       // \Name: handleLmbDown
@@ -105,10 +78,7 @@ namespace StandoffApp_n
       // - const std::pair<int, int>&, the screen tile position
       // \Returns
       // - SDL_Texture*, pointer to the desired texture
-      void StandoffApp_c::renderTileBaseSprite(const std::pair<int, int>& tile_position, SDL_Rect& dest_rect);
-
-      // the window to render to
-      SDL_Window* gWindow = NULL;
+      void StandoffApp_c::renderTileBaseSprite(const std::pair<int, int>& tile_position);
 
       // the window renderer
       SDL_Renderer* gRenderer = NULL;
@@ -117,7 +87,7 @@ namespace StandoffApp_n
       SDL_Texture* gTexture = NULL;
 
       // bulk loads assets and manages them for the client
-      ResourceManager_n::ResourceManager_c* mResourceManager = NULL;
+      ResourceManager_n::ResourceManager_c& mResourceManager;
 
       // the current game instance
       Game_n::Game_c* mCurrentGame = NULL;

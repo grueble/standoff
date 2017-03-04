@@ -7,6 +7,8 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <unordered_map>
+#include "LTexture.hpp"
 
 // make sure to include the correct .dll in the running directory for the executable
 
@@ -14,28 +16,22 @@ namespace ResourceManager_n
 {
    // the width of (both) the border tiles (and the margin)
    static const int TILE_WIDTH = 60; 
+   static const int BORDER_WIDTH = 20;
 
    // paths to game assets
    static const std::string PATH_TO_ASSETS = "../assets/";
    static const std::vector<std::string> IMG_PATHS =
    {
-      "board.png", "tiles.png", "pieces.png", "special.png"
+      "board.png", "spritesheet.png" // "tiles.png", "pieces.png", "special.png"
    };
 
    // screen dimension constants
    static const int SCREEN_WIDTH = ResourceManager_n::TILE_WIDTH * 19;
    static const int SCREEN_HEIGHT = ResourceManager_n::TILE_WIDTH * 11;
 
-   enum ImageType_e
+   enum Sprite_e
    {
       BOARD,
-      BASE_TILE,
-      EDGE_TILE,
-      CORNER_TILE,
-      P1_SCORING_TILE,
-      P1_MANHOLE_TILE,
-      P2_SCORING_TILE,
-      P2_MANHOLE_TILE,
       P1_PAWN,
       P1_GUN,
       P1_SLINGER,
@@ -43,76 +39,78 @@ namespace ResourceManager_n
       P2_GUN,
       P2_SLINGER,
       BRIEFCASE,
-      CURSOR
-   };
-
-   struct Sprite_s
-   {
-      // parameterized constructor
-      Sprite_s(const std::string &img_path, SDL_Texture* texture, SDL_Rect* clip) :
-         mImgPath(img_path),
-         mTexture(texture),
-         mClip(clip)
-      {
-
-      }
-
-      // copy constructor
-      Sprite_s(const Sprite_s& sprite) : 
-         mImgPath(sprite.mImgPath),
-         mTexture(sprite.mTexture),
-         mClip(sprite.mClip)
-      {
-
-      }
-
-      const std::string& mImgPath;
-      SDL_Texture* mTexture;
-      SDL_Rect* mClip;
+      CURSOR,
+      BASE_TILE,
+      EDGE_TILE,
+      CORNER_TILE,
+      P1_SCORING_TILE,
+      P1_MANHOLE_TILE,
+      P2_SCORING_TILE,
+      P2_MANHOLE_TILE
    };
 
    class ResourceManager_c
    {
    public:
       // default constructor
-      ResourceManager_c(SDL_Renderer* renderer);
+      ResourceManager_c();
 
       // default destructor
       ~ResourceManager_c();
 
-      // \Name: getTexture
+      // \Name: init
       // \Description:
-      // - returns a texture based on the passed value
+      // - initializes the StandoffApp's SDL2 functionality
       // \Argument:
-      // - Imagetype_e, the type of image to return
+      // - none
       // \Returns
-      // - SDL_Texture*, pointer to the requested texture
-      Sprite_s& getSprite(ImageType_e image_type);
+      // - bool, success of failure
+      bool init();
 
-      // \Name: loadTextures
+      // \Name: loadMedia
       // \Description:
-      // - loads all required textures to memory
+      // - loads all required media to memory
       // \Argument:
       // - none
       // \Returns
       // - bool, success or failure
-      bool loadTextures();
+      bool loadMedia();
+
+      // \Name: close
+      // \Description:
+      // - closes the Standoff (client) Application
+      // \Argument:
+      // - none
+      // \Returns
+      // - none
+      void close();
+
+      // \Name: renderSpriteAt
+      // \Description:
+      // - returns a texture based on the passed value
+      // \Argument:
+      // - Sprite_e, the type of image to return
+      // \Returns
+      // - SDL_Texture*, pointer to the requested texture
+      void renderSpriteAt(
+         Sprite_e sprite, const std::pair<int, int>& screen_tile_coord, double degrees = 0);
 
    protected:
-      void loadSprites(const std::string &img_path, SDL_Texture& spritesheet);
+      void createSpriteMap();
+
+      // the window to render to
+      SDL_Window* gWindow = NULL;
 
       // the window renderer
       SDL_Renderer* gRenderer = NULL;
 
-      // container mapping the loaded SDL_Textures to an indentifying enumeration
-      // typedef std::vector<std::unique_ptr<std::pair<const std::string&, SDL_Texture*>>> TextureMap;
-      // TextureMap& mTextures;
-      std::vector<SDL_Texture*> mTextures;
+      // storage for necessary textures
+      LTexture gBoardTexture;
+      LTexture gSpritesheetTexture;
 
-      // typedef std::unordered_map<ImageType_e, Sprite_s> SpriteMap;
-      // typedef std::vector<std::unique_ptr<std::pair<ImageType_e, Sprite_s>>> SpriteMap;
-      // SpriteMap mSprites;
-      std::vector<Sprite_s> mSprites;
+      // mapping of sprite type to spritesheet clip
+      typedef std::unordered_map<Sprite_e, SDL_Rect> SpriteMap;
+      SpriteMap mSpriteMap;
    };
 }
 
