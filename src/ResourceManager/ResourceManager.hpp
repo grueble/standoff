@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <vector>
 #include <string>
-#include <memory>
 #include <unordered_map>
 #include "LTexture.hpp"
 
@@ -19,7 +18,7 @@ namespace ResourceManager_n
    static const int BORDER_WIDTH = 20;
 
    // paths to game assets
-   static const std::string PATH_TO_ASSETS = "../assets/";
+   static const std::string PATH_TO_ASSETS = "d:/dev/projects/Standoff/assets/";
    static const std::vector<std::string> IMG_PATHS =
    {
       "board.png", "spritesheet.png" // "tiles.png", "pieces.png", "special.png"
@@ -32,12 +31,12 @@ namespace ResourceManager_n
    enum Sprite_e
    {
       BOARD,
-      P1_PAWN,
-      P1_GUN,
-      P1_SLINGER,
       P2_PAWN,
       P2_GUN,
       P2_SLINGER,
+      P1_PAWN,
+      P1_GUN,
+      P1_SLINGER,
       BRIEFCASE,
       CURSOR,
       BASE_TILE,
@@ -84,6 +83,15 @@ namespace ResourceManager_n
       // \Returns
       // - none
       void close();
+
+      // \Name: getRenderer
+      // \Description:
+      // - gets the ResourceManager's gRenderer
+      // \Argument:
+      // - none
+      // \Returns
+      // - SDL_Renderer*, pointer to the renderer
+      SDL_Renderer* getRenderer();
 
       // \Name: renderSpriteAt
       // \Description:

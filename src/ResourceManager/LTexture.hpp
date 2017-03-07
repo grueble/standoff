@@ -21,7 +21,7 @@ public:
                SDL_Rect* clip = NULL, 
                double degrees = 0);
 private:
-   SDL_Texture* mTexture;
+   SDL_Texture* mTexture = NULL;
 };
 
 #endif _L_TEXTURE_HPP_

@@ -41,6 +41,7 @@ void Piece_c::setPosition(const std::pair<int, int>& new_position)
          if (this->isValidDeployment(new_position))
          {
             mPosition = new_position;
+            this->nextPlayState();
          }
          else 
          {

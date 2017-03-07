@@ -22,7 +22,8 @@ int main(int argc, char* argv[])
       }
       else 
       {
-         StandoffApp_n::StandoffApp_c standoff_app(resource_manager);
+         StandoffApp_n::StandoffApp_c standoff_app(resource_manager, 
+                                                   resource_manager.getRenderer());
          int exit_reason = standoff_app.run();
       }
    }

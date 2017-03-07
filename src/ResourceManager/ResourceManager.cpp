@@ -3,6 +3,9 @@
 
 using namespace ResourceManager_n;
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// - Constructor and Destructor
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ResourceManager_c::ResourceManager_c()
 {
 
@@ -13,6 +16,9 @@ ResourceManager_c::~ResourceManager_c()
 
 }
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// - Memory Management
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 bool ResourceManager_c::init()
 {
    // initialization flag
@@ -42,7 +48,7 @@ bool ResourceManager_c::init()
       else
       {
          // create renderer for window
-         gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_TARGETTEXTURE);
+         gRenderer = SDL_CreateRenderer(gWindow, -1, SDL_RENDERER_ACCELERATED);// SDL_RENDERER_TARGETTEXTURE);
          if( gRenderer == NULL )
          {
             printf( "Renderer could not be created! SDL Error: %s\n", SDL_GetError() );
@@ -51,7 +57,7 @@ bool ResourceManager_c::init()
          else 
          {
             //Initialize renderer color
-            SDL_SetRenderDrawColor( gRenderer, 0xFF, 0xFF, 0xFF, 0xFF );
+            SDL_SetRenderDrawColor( gRenderer, 0x00, 0x00, 0x00, 0xFF );
 
             //Initialize PNG loading
             int imgFlags = IMG_INIT_PNG;
@@ -108,12 +114,22 @@ void ResourceManager_c::close()
    SDL_Quit();
 }
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// - getRenderer
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+SDL_Renderer* ResourceManager_c::getRenderer()
+{
+   return gRenderer;
+}
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// - renderSpriteAt
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void ResourceManager_c::renderSpriteAt(Sprite_e sprite, 
                                        const std::pair<int, int>& screen_tile_coord, 
                                        double degrees)
 {
    SDL_Rect dest_rect;
-
    if (sprite != BOARD)
    {  
       dest_rect = { 
@@ -142,11 +158,14 @@ void ResourceManager_c::renderSpriteAt(Sprite_e sprite,
    }
 }
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// - createSpriteMap
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void ResourceManager_c::createSpriteMap()
 {
    SDL_Rect clip = { 0, 0, TILE_WIDTH, TILE_WIDTH };
 
-   for (int sprite_int = P1_PAWN; sprite_int != P2_MANHOLE_TILE; ++sprite_int)
+   for (int sprite_int = P2_PAWN; sprite_int != P2_MANHOLE_TILE; ++sprite_int)
    {
       std::pair<Sprite_e, SDL_Rect> sprite = std::pair<Sprite_e, SDL_Rect>(static_cast<Sprite_e>(sprite_int), clip);
       mSpriteMap.insert(sprite);

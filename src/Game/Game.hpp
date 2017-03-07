@@ -1,26 +1,51 @@
 #ifndef _GAME_HPP_
 #define _GAME_HPP_
 
-#include <utility>
-
+#include <memory>
 #include "Piece.hpp"
 
 namespace Game_n
 {
+   typedef std::shared_ptr<Piece_n::Piece_c> PiecePtr;
+
    // the board's upper left hand corner in "screen tile" coordinates
    // -> the window's upper left hand corner is at (0, 0)
-   static const std::pair<int,int>& BOARD_COORD = std::make_pair(1, 5); 
-
-   // starting "screen tile" coordinates for reserve piece positions
-   static const std::pair<int,int>& P1_RESERVE_COORD = std::make_pair(9, 15);
-   static const std::pair<int,int>& P2_RESERVE_COORD = std::make_pair(1, 3);
-
-   // scoring "screen tile" coordinates
-   static const std::pair<int, int>& P1_SCORING_COORD = std::make_pair(9, 13);
-   static const std::pair<int, int>& P2_SCORING_COORD = BOARD_COORD;
+   static const std::pair<int,int>& BOARD_COORD = std::make_pair(5, 1); 
 
    // the board's side length
    static const int& BOARD_SIDE_LENGTH = 9;
+
+   // the valid gun/slinger deployment positions for both players
+   static const std::vector<std::pair<int, int>> P1_GUNSLINGER_DEPLOYMENT_ZONES =
+   {
+      std::make_pair(BOARD_COORD.first + 1, BOARD_COORD.second + (BOARD_SIDE_LENGTH - 1)),
+      std::make_pair(BOARD_COORD.first + 3, BOARD_COORD.second + (BOARD_SIDE_LENGTH - 1)),
+      std::make_pair(BOARD_COORD.first + 7, BOARD_COORD.second + (BOARD_SIDE_LENGTH - 1)),
+      std::make_pair(BOARD_COORD.first + (BOARD_SIDE_LENGTH - 1), BOARD_COORD.second + 1),
+      std::make_pair(BOARD_COORD.first + (BOARD_SIDE_LENGTH - 1), BOARD_COORD.second + 3),
+      std::make_pair(BOARD_COORD.first + (BOARD_SIDE_LENGTH - 1), BOARD_COORD.second + 7)
+   };
+
+   static const std::vector<std::pair<int, int>> P2_GUNSLINGER_DEPLOYMENT_ZONES =
+   {
+      std::make_pair(BOARD_COORD.first + 1, BOARD_COORD.second),
+      std::make_pair(BOARD_COORD.first + 3, BOARD_COORD.second),
+      std::make_pair(BOARD_COORD.first + 7, BOARD_COORD.second),
+      std::make_pair(BOARD_COORD.first, BOARD_COORD.second + 1),
+      std::make_pair(BOARD_COORD.first, BOARD_COORD.second + 3),
+      std::make_pair(BOARD_COORD.first, BOARD_COORD.second + 7)
+   };
+
+   // starting "screen tile" coordinates for reserve piece positions
+   static const std::pair<int,int>& P1_RESERVE_COORD = std::make_pair(15, 9);
+   static const std::pair<int,int>& P2_RESERVE_COORD = std::make_pair(3, 1);
+
+   // scoring "screen tile" coordinates
+   static const std::pair<int, int>& P1_SCORING_COORD = std::make_pair(13, 9);
+   static const std::pair<int, int>& P2_SCORING_COORD = BOARD_COORD;
+
+   // the briefcase's starting position
+   static const std::pair<int, int>& BRIEFCASE_COORD = std::make_pair(BOARD_COORD.first + 4, BOARD_COORD.second + 4);
 
    // piece totals
    static const int& NUM_PAWNS = 4;
@@ -30,15 +55,43 @@ namespace Game_n
    // stores all of the data about a player
    struct Player_s
    {
+      Player_s() :
+         mUserId(0)
+      {
+
+      }
+
       int mUserId;
-      std::vector<Piece_n::Piece_c> mPieces;
+      std::vector<PiecePtr> mPieces;
+   };
+
+   // stores data about a staged move
+   struct Move_s
+   {
+      Move_s() :
+         mMovedPiece(nullptr),
+         mMoveFlag(false),
+         mRotateFlag(false),
+         mShootoutFlag(false),
+         mDeploymentFlag(false)
+      {
+
+      }
+
+      PiecePtr mMovedPiece;
+      std::pair<int, int> mPrevPosition;
+      Piece_n::Direction_e mPrevDirection;
+      bool mMoveFlag;
+      bool mRotateFlag;
+      bool mShootoutFlag;
+      bool mDeploymentFlag;
    };
 
    class Game_c
    {
    public:
       // constructor
-      Game_c(); // const ResourceManager_n::ResourceManager_c& resource_manager);
+      Game_c();
 
       // default destructor
       ~Game_c();
@@ -47,7 +100,7 @@ namespace Game_n
       // \Description:
       // - moves a piece
       // \Argument:
-      // - std::pair<int, int>&, the click position in screen tile coordinates
+      // - const std::pair<int, int>&, the click position in screen tile coordinates
       // \Returns
       // - none
       void move(const std::pair<int, int>& screen_tile_coord);
@@ -56,10 +109,9 @@ namespace Game_n
       // \Description:
       // - initiates a shootout event
       // \Argument:
-      // - Piece_c&, the piece to rotate
       // - Direction
       // \Returns
-      // - bool, true if the rotation is successful, false o/w
+      // - none
       void rotate(const Piece_n::Direction_e& rotate_direction);
 
       // \Name: shootout
@@ -71,15 +123,6 @@ namespace Game_n
       // - none
       void shootout();
 
-      // \Name: getCurrentPlayer
-      // \Description:
-      // - returns the player whose turn it is
-      // \Argument:
-      // - none
-      // \Returns
-      // - Player_s&, the player whose turn it is
-      Player_s& getCurrentPlayer();
-
       // \Name: nextPlayer
       // \Description:
       // - passes the turn to the player whose turn it is not
@@ -89,69 +132,6 @@ namespace Game_n
       // - none
       void nextPlayer();
 
-      // \Name: getCurrentPiece
-      // \Description:
-      // - returns the currently seleced piece
-      // \Argument:
-      // - none
-      // \Returns
-      // - Piece_c&, the currently selected piece
-      Piece_n::Piece_c* getCurrentPiece();
-
-      // \Name: setCurrentPiece
-      // \Description:
-      // - sets the currently seleced piece
-      // \Argument:
-      // - Piece_c&, the piece to set as current
-      // \Returns
-      // - none
-      void setCurrentPiece(Piece_n::Piece_c& piece);
-
-      // \Name: emptyCurrentPiece
-      // \Description:
-      // - empty the currently seleced piece
-      // \Argument:
-      // - none
-      // \Returns
-      // - none
-      void emptyCurrentPiece();
-
-      // \Name: getPlayer1Pieces
-      // \Description:
-      // - returns a particular player's pieces
-      // \Argument:
-      // - none
-      // \Returns
-      // - const std::vector<Piece_n::Piece_c>&, the passed player's pieces
-      const std::vector<Piece_n::Piece_c>& getPlayer1Pieces();
-
-      // \Name: getPlayer2Pieces
-      // \Description:
-      // - returns a particular player's pieces
-      // \Argument:
-      // - none
-      // \Returns
-      // - const std::vector<Piece_n::Piece_c>&, the passed player's pieces
-      const std::vector<Piece_n::Piece_c>& getPlayer2Pieces();
-
-      // \Name: getMovedPiece
-      // \Description:
-      // - returns mMovedPiece
-      // \Argument:
-      // - none
-      // \Returns
-      // - none
-      Piece_n::Piece_c& getMovedPiece();
-
-      // \Name: getPreMovePieceState
-      // \Description:
-      // - returns mPreMovePieceState
-      // \Argument:
-      // - none
-      // \Returns
-      // - none
-      Piece_n::Piece_c& getPreMovePieceState();
-
       // \Name: revertMove
       // \Description:
       // - reverts a moved piece to its previous position
@@ -160,6 +140,57 @@ namespace Game_n
       // \Returns
       // - none
       void revertMove();
+
+      // \Name: getCurrentPiece
+      // \Description:
+      // - returns the currently seleced piece
+      // \Argument:
+      // - none
+      // \Returns
+      // - Piece_c&, the currently selected piece
+      PiecePtr getCurrentPiece();
+
+      // \Name: setCurrentPiece
+      // \Description:
+      // - sets the currently seleced piece
+      // \Argument:
+      // - Piece_c&, the piece to set as current
+      // \Returns
+      // - none
+      void setCurrentPiece(PiecePtr piece_ptr);
+
+      std::pair<int, int>& getBriefcasePosition();
+
+      // \Name: getPlayer1Pieces
+      // \Description:
+      // - returns a particular player's pieces
+      // \Argument:
+      // - none
+      // \Returns
+      // - const std::vector<Piece_n::Piece_c>&, the passed player's pieces
+      const std::vector<PiecePtr>& getPlayer1Pieces();
+
+      // \Name: getPlayer2Pieces
+      // \Description:
+      // - returns a particular player's pieces
+      // \Argument:
+      // - none
+      // \Returns
+      // - const std::vector<Piece_n::Piece_c>&, the passed player's pieces
+      const std::vector<PiecePtr>& getPlayer2Pieces();
+
+      // \Name: getCurrentMove
+      // \Description:
+      // - reverts a moved piece to its previous position
+      // \Argument:
+      // - none
+      // \Returns
+      // - none
+      Move_s& Game_c::getCurrentMove();
+
+      bool moved();
+
+      bool deployed();
 
       // \Name: getShootoutFlag
       // \Description:
@@ -177,7 +208,7 @@ namespace Game_n
       // - none
       // \Returns
       // - none
-      void setShootoutFlag();
+      void flagShootout();
 
       // \Name: gameOver
       // \Description:
@@ -188,6 +219,9 @@ namespace Game_n
       // - bool, true if the current player is the winner
       bool gameOver();
 
+      // flag used to ascertain the current player; true if p1, false o/w
+      int mCurrentTurn;
+
    protected:
       // \Name: initPieces
       // \Description:
@@ -197,7 +231,7 @@ namespace Game_n
       // - bool, true if player is mPlayer1, false o/w
       // \Returns
       // - none
-      void initPieces(Player_s& player, bool player1);
+      void initPieces(); //Player_s& player, bool player1);
 
       // \Name: detectHit
       // \Description:
@@ -206,37 +240,19 @@ namespace Game_n
       // - none
       // \Returns
       // - none     
-      void detectHit(Piece_n::Piece_c& piece,
-                     std::vector<Piece_n::Piece_c>& pieces,
-                     std::vector<Piece_n::Piece_c>& hit_pieces);
-
-      // stores the app's ResourceManager_c
-      // ResourceManager_n::ResourceManager_c mResourceManager;
+      void detectHit(Piece_n::Piece_c& piece, std::vector<PiecePtr>& pieces);
 
       // stores references to the two Player_s objects initialized on construction
       Player_s mPlayer1;
       Player_s mPlayer2;
 
-      // the current player
-      Player_s mCurrentPlayer;
-
       // pointer to the current piece, if any
-      Piece_n::Piece_c* mCurrentPiece;
+      PiecePtr mCurrentPiece;
 
-      // pointer to the piece staged for moving, if any
-      Piece_n::Piece_c* mMovedPiece;
+      std::pair<int, int> mBriefcasePosition;
 
-      // stores the previous state of the piece staged for moving (in case a revert is needed)
-      Piece_n::Piece_c* mPreMovePiece;
-
-      // true if a shootout has been called, false o/w
-      bool mShootoutFlag;
-
-      // true if a move is currently staged, false o/w
-      bool mMoveFlag;
-
-      // true if the currently staged move is a deployment, false o/w
-      bool mDeploymentFlag;
+      // struct containing info about a staged move
+      Move_s mCurrentMove;
    };
 }
 
