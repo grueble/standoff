@@ -52,6 +52,16 @@ namespace Game_n
    static const int& NUM_GUNS = 6;
    static const int& NUM_SLINGERS = 2;
 
+   enum Action_e
+   {
+      NONE,
+      PRE_DEPLOY,
+      DEPLOY,
+      MOVE,
+      ROTATE,
+      SHOOTOUT,
+   };
+
    // stores all of the data about a player
    struct Player_s
    {
@@ -70,10 +80,7 @@ namespace Game_n
    {
       Move_s() :
          mMovedPiece(nullptr),
-         mMoveFlag(false),
-         mRotateFlag(false),
-         mShootoutFlag(false),
-         mDeploymentFlag(false)
+         mCurrentAction(NONE)
       {
 
       }
@@ -81,10 +88,7 @@ namespace Game_n
       PiecePtr mMovedPiece;
       std::pair<int, int> mPrevPosition;
       Piece_n::Direction_e mPrevDirection;
-      bool mMoveFlag;
-      bool mRotateFlag;
-      bool mShootoutFlag;
-      bool mDeploymentFlag;
+      Action_e mCurrentAction;
    };
 
    class Game_c
@@ -187,28 +191,6 @@ namespace Game_n
       // \Returns
       // - none
       Move_s& Game_c::getCurrentMove();
-
-      bool moved();
-
-      bool deployed();
-
-      // \Name: getShootoutFlag
-      // \Description:
-      // - returns the shootout flag
-      // \Argument:
-      // - none
-      // \Returns
-      // - bool&, the shootout flag
-      const bool& getShootoutFlag();
-
-      // \Name: setShootoutFlag
-      // \Description:
-      // - sets the shootout flag to true
-      // \Argument:
-      // - none
-      // \Returns
-      // - none
-      void flagShootout();
 
       // \Name: gameOver
       // \Description:

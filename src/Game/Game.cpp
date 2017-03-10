@@ -34,23 +34,39 @@ void Game_c::move(const std::pair<int, int>& screen_tile_coord)
        screen_tile_coord.second >= BOARD_COORD.second &&
        screen_tile_coord.second < BOARD_COORD.second + BOARD_SIDE_LENGTH)
    {
+      std::cout << "Valid Click" << std::endl;
+
+      // the briefcase moves with any piece that starts a move from its position
       if (mCurrentPiece->getPosition() == BRIEFCASE_COORD) 
       { 
          mBriefcasePosition = screen_tile_coord; 
       }
-      if (mCurrentPiece->getPieceType() != Piece_n::PAWN &&  
-          mCurrentPiece->getPlayState() == Piece_n::RESERVE) 
+
+      // a piece moved from reserve waits for a direction
+      if (mCurrentPiece->getPlayState() == Piece_n::RESERVE) 
       {
-         mCurrentMove.mDeploymentFlag = true; 
+         if (mCurrentPiece->getPieceType() != Piece_n::PAWN)
+         {
+            mCurrentMove.mCurrentAction = PRE_DEPLOY;
+         }
+         else // unless that piece is a pawn
+         {
+            mCurrentMove.mCurrentAction = DEPLOY;
+         }
       }
+      else // live pieces cannot be rotated after a move
+      {
+         mCurrentMove.mCurrentAction = MOVE;
+      }
+
+      // store data about the move
       mCurrentMove.mMovedPiece = mCurrentPiece;
       mCurrentMove.mPrevPosition = mCurrentPiece->getPosition();
       mCurrentPiece->setPosition(screen_tile_coord);
-      mCurrentMove.mMoveFlag = true;
    }
-   else 
+   else // invalid move
    {
-      setCurrentPiece(nullptr);
+       mCurrentPiece = nullptr;
    }
 }
 
@@ -58,14 +74,20 @@ void Game_c::rotate(const Piece_n::Direction_e& rotate_direction)
 {
    if (mCurrentPiece->getPlayState() == Piece_n::LIVE)
    {
-      if (mCurrentMove.mDeploymentFlag = true) 
+      // a piece is fully deployed after both a move and a rotation
+      if (mCurrentMove.mCurrentAction == PRE_DEPLOY) 
       { 
-         mCurrentMove.mDeploymentFlag = false; 
+         mCurrentMove.mCurrentAction = DEPLOY;
       }
+      else // o/w this is just a standard rotation
+      {
+         mCurrentMove.mCurrentAction = ROTATE;
+      }
+
+      // store data about the move
       mCurrentMove.mMovedPiece = mCurrentPiece;
       mCurrentMove.mPrevDirection = mCurrentPiece->getDirection();
       mCurrentPiece->setDirection(rotate_direction);
-      mCurrentMove.mRotateFlag = true;
    }
 }
 
@@ -74,55 +96,91 @@ void Game_c::shootout()
    std::vector<PiecePtr>::iterator p1_it;
    for (p1_it = mPlayer1.mPieces.begin(); p1_it != mPlayer1.mPieces.end(); ++p1_it)
    {
-      if ((*p1_it)->getPlayState() == Piece_n::LIVE && (*p1_it)->getPieceType() != Piece_n::PAWN)
+      if ((*p1_it)->getPlayState() != Piece_n::RESERVE && (*p1_it)->getPieceType() != Piece_n::PAWN)
       {
-         detectHit(**p1_it, mPlayer1.mPieces);
+         detectHit(**p1_it, mPlayer2.mPieces);
       }
    }
    std::vector<PiecePtr>::iterator p2_it;
    for (p2_it = mPlayer2.mPieces.begin(); p2_it != mPlayer2.mPieces.end(); ++p2_it)
    {
-      if ((*p2_it)->getPlayState() == Piece_n::LIVE && (*p2_it)->getPieceType() != Piece_n::PAWN)
+      if ((*p2_it)->getPlayState() != Piece_n::RESERVE && (*p2_it)->getPieceType() != Piece_n::PAWN)
       {
-         detectHit(**p2_it, mPlayer2.mPieces);
+         detectHit(**p2_it, mPlayer1.mPieces);
       }
    }
 
-   mCurrentMove.mShootoutFlag = false;
+   for (p1_it = mPlayer1.mPieces.begin(); p1_it != mPlayer1.mPieces.end(); ++p1_it)
+   {
+      if ((*p1_it)->getPlayState() == Piece_n::DEAD)
+      {
+         p1_it = mPlayer1.mPieces.erase(p1_it);
+      }
+   }
+
+   for (p2_it = mPlayer2.mPieces.begin(); p2_it != mPlayer2.mPieces.end(); ++p2_it)
+   {
+      if ((*p2_it)->getPlayState() == Piece_n::DEAD)
+      {
+         p2_it = mPlayer2.mPieces.erase(p2_it);
+      }
+   }
 }
 
 void Game_c::nextPlayer()
 {
-   // empty current move
+   // null stored pointers
    mCurrentMove.mMovedPiece = nullptr;
-   mCurrentMove.mPrevDirection = Piece_n::NONE;
-   mCurrentMove.mMoveFlag = false;
-   mCurrentMove.mRotateFlag = false;
+   mCurrentPiece = nullptr;
 
-   setCurrentPiece(nullptr);
+   // reset current action
+   mCurrentMove.mCurrentAction = NONE;
+
+   // increment the turn
    mCurrentTurn++;
 }
 
 void Game_c::revertMove()
 {
-   if (mCurrentMove.mMoveFlag)
+   switch (mCurrentMove.mCurrentAction)
    {
-      setCurrentPiece(nullptr);
-      mCurrentMove.mMovedPiece->setPosition(mCurrentMove.mPrevPosition);
-      mCurrentMove.mMoveFlag = false;
-   }
-   if (mCurrentMove.mRotateFlag)
-   {
-      setCurrentPiece(nullptr);
-      mCurrentMove.mMovedPiece->setDirection(mCurrentMove.mPrevDirection);
-      mCurrentMove.mRotateFlag = false;
-   }
-   if (mCurrentMove.mShootoutFlag)
-   {
-      mCurrentMove.mShootoutFlag = false;
+      case (PRE_DEPLOY):
+      {
+         mCurrentMove.mMovedPiece->setPosition(mCurrentMove.mPrevPosition);
+         mCurrentMove.mMovedPiece = nullptr;
+         break;
+      }
+      case (DEPLOY) :
+      {
+         mCurrentMove.mMovedPiece->setPosition(mCurrentMove.mPrevPosition);
+         mCurrentMove.mMovedPiece->setDirection(mCurrentMove.mPrevDirection);
+         mCurrentMove.mMovedPiece = nullptr;
+         break;
+      }
+      case (MOVE) :
+      {
+         mCurrentMove.mMovedPiece->setPosition(mCurrentMove.mPrevPosition);
+         mCurrentMove.mMovedPiece = nullptr;
+         break;
+      }
+      case (ROTATE) :
+      {
+         mCurrentMove.mMovedPiece->setDirection(mCurrentMove.mPrevDirection);
+         mCurrentMove.mMovedPiece = nullptr;
+         break;
+      }
+      default :
+      {
+         break;
+      }
    }
 
-   mCurrentMove.mMovedPiece = nullptr;
+   if (mCurrentPiece != nullptr)
+   {
+      mCurrentPiece = nullptr;
+   }
+
+   mCurrentMove.mCurrentAction = NONE;
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -157,26 +215,6 @@ const std::vector<PiecePtr>& Game_c::getPlayer2Pieces()
 Move_s& Game_c::getCurrentMove()
 {
    return mCurrentMove;
-}
-
-bool Game_c::moved()
-{
-   return mCurrentMove.mMoveFlag || mCurrentMove.mRotateFlag || mCurrentMove.mShootoutFlag;
-}
-
-bool Game_c::deployed()
-{
-   return mCurrentMove.mDeploymentFlag;
-}
-
-const bool& Game_c::getShootoutFlag()
-{
-   return mCurrentMove.mShootoutFlag;
-}
-
-void Game_c::flagShootout()
-{
-   mCurrentMove.mShootoutFlag = true;
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -312,6 +350,8 @@ void Game_c::initPieces()
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void Game_c::detectHit(Piece_n::Piece_c& piece, std::vector<PiecePtr>& pieces)
 {
+   std::cout << "Hit Detection" << std::endl;
+
    // true if the supplied piece is a slinger; triggers additional hit detections
    bool slinger_flag = false;
    if (piece.getPieceType() == Piece_n::SLINGER) { slinger_flag = true; }
@@ -331,38 +371,37 @@ void Game_c::detectHit(Piece_n::Piece_c& piece, std::vector<PiecePtr>& pieces)
          std::vector<PiecePtr>::iterator it;
          for (it = pieces.begin(); it != pieces.end(); ++it)
          {
-            if ((*it)->getPosition().second < piece.getPosition().second && 
-                (*it)->getPosition().second >= BOARD_COORD.second)
+            if ((*it)->getPlayState() != Piece_n::RESERVE)
             {
-               if (hit_piece_flag)
+               if ((*it)->getPosition().first == piece.getPosition().first &&
+                  (*it)->getPosition().second < piece.getPosition().second)
                {
-                  if ((*it)->getPosition().second > hit_piece->getPosition().second)
+                  if (hit_piece_flag &&
+                     (*it)->getPosition().second > hit_piece->getPosition().second)
                   {
                      hit_piece = *it;
                   }
-               }
-               else 
-               {
-                  hit_piece = *it;
-                  hit_piece_flag = true;
-               }
-            }
-            if (slinger_flag)
-            {
-               if ((*it)->getPosition().first > piece.getPosition().first &&
-                   (*it)->getPosition().first <= BOARD_COORD.first + BOARD_SIDE_LENGTH)
-               {
-                  if (slinger_hit_piece_flag)
+                  else
                   {
-                     if ((*it)->getPosition().first < hit_piece->getPosition().first)
-                     {
-                        hit_piece = *it;
-                     }
+                     hit_piece = *it;
+                     hit_piece_flag = true;
                   }
-                  else 
+               }
+               if (slinger_flag)
+               {
+                  if ((*it)->getPosition().second == piece.getPosition().second &&
+                     (*it)->getPosition().first > piece.getPosition().first)
                   {
-                     slinger_hit_piece = *it;
-                     slinger_hit_piece_flag = true;
+                     if (slinger_hit_piece_flag &&
+                        (*it)->getPosition().first < slinger_hit_piece->getPosition().first)
+                     {
+                        slinger_hit_piece = *it;
+                     }
+                     else
+                     {
+                        slinger_hit_piece = *it;
+                        slinger_hit_piece_flag = true;
+                     }
                   }
                }
             }
@@ -381,38 +420,37 @@ void Game_c::detectHit(Piece_n::Piece_c& piece, std::vector<PiecePtr>& pieces)
          std::vector<PiecePtr>::iterator it;
          for (it = pieces.begin(); it != pieces.end(); ++it)
          {
-            if ((*it)->getPosition().second > piece.getPosition().second &&
-                (*it)->getPosition().second <= BOARD_COORD.second + BOARD_SIDE_LENGTH)
+            if ((*it)->getPlayState() != Piece_n::RESERVE)
             {
-               if (hit_piece_flag)
+               if ((*it)->getPosition().first == piece.getPosition().first &&
+                  (*it)->getPosition().second > piece.getPosition().second)
                {
-                  if ((*it)->getPosition().second < hit_piece->getPosition().second)
+                  if (hit_piece_flag &&
+                     (*it)->getPosition().second < hit_piece->getPosition().second)
                   {
                      hit_piece = *it;
                   }
-               }
-               else 
-               {
-                  hit_piece = *it;
-                  hit_piece_flag = true;
-               }
-            }
-            if (slinger_flag)
-            {
-               if ((*it)->getPosition().first < piece.getPosition().first &&
-                   (*it)->getPosition().first >= BOARD_COORD.first)
-               {
-                  if (slinger_hit_piece_flag)
+                  else
                   {
-                     if ((*it)->getPosition().first > hit_piece->getPosition().first)
-                     {
-                        hit_piece = *it;
-                     }
+                     hit_piece = *it;
+                     hit_piece_flag = true;
                   }
-                  else 
+               }
+               if (slinger_flag)
+               {
+                  if ((*it)->getPosition().second == piece.getPosition().second &&
+                     (*it)->getPosition().first < piece.getPosition().first)
                   {
-                     slinger_hit_piece = *it;
-                     slinger_hit_piece_flag = true;
+                     if (slinger_hit_piece_flag &&
+                        (*it)->getPosition().first > slinger_hit_piece->getPosition().first)
+                     {
+                        slinger_hit_piece = *it;
+                     }
+                     else
+                     {
+                        slinger_hit_piece = *it;
+                        slinger_hit_piece_flag = true;
+                     }
                   }
                }
             }
@@ -431,40 +469,39 @@ void Game_c::detectHit(Piece_n::Piece_c& piece, std::vector<PiecePtr>& pieces)
          std::vector<PiecePtr>::iterator it;
          for (it = pieces.begin(); it != pieces.end(); ++it)
          {
-            if ((*it)->getPosition().first < piece.getPosition().first &&
-                (*it)->getPosition().first >= BOARD_COORD.first)
+            if ((*it)->getPlayState() != Piece_n::RESERVE)
             {
-               if (hit_piece_flag)
+               if ((*it)->getPosition().second == piece.getPosition().second &&
+                  (*it)->getPosition().first < piece.getPosition().first)
                {
-                  if ((*it)->getPosition().first > hit_piece->getPosition().first)
+                  if (hit_piece_flag &&
+                     (*it)->getPosition().first > hit_piece->getPosition().first)
                   {
                      hit_piece = *it;
                   }
-               }
-               else 
-               {
-                  hit_piece = *it;
-                  hit_piece_flag = true;
-               }
-            }
-            if (slinger_flag)
-            {
-               if ((*it)->getPosition().second < piece.getPosition().second &&
-                   (*it)->getPosition().second >= BOARD_COORD.second)
-               {
-                  if (slinger_hit_piece_flag)
+                  else
                   {
-                     if ((*it)->getPosition().second > hit_piece->getPosition().second)
+                     hit_piece = *it;
+                     hit_piece_flag = true;
+                  }
+               }
+               if (slinger_flag)
+               {
+                  if ((*it)->getPosition().first == piece.getPosition().first &&
+                     (*it)->getPosition().second < piece.getPosition().second)
+                  {
+                     if (slinger_hit_piece_flag &&
+                        (*it)->getPosition().second > hit_piece->getPosition().second)
                      {
-                        hit_piece = *it;
+                        slinger_hit_piece = *it;
+                     }
+                     else
+                     {
+                        slinger_hit_piece = *it;
+                        slinger_hit_piece_flag = true;
                      }
                   }
-                  else 
-                  {
-                     slinger_hit_piece = *it;
-                     slinger_hit_piece_flag = true;
-                  }
-               }  
+               }
             }
          }
 
@@ -481,40 +518,39 @@ void Game_c::detectHit(Piece_n::Piece_c& piece, std::vector<PiecePtr>& pieces)
          std::vector<PiecePtr>::iterator it;
          for (it = pieces.begin(); it != pieces.end(); ++it)
          {
-            if ((*it)->getPosition().first > piece.getPosition().first &&
-                (*it)->getPosition().first <= BOARD_COORD.first + BOARD_SIDE_LENGTH)
+            if ((*it)->getPlayState() != Piece_n::RESERVE)
             {
-               if (hit_piece_flag)
+               if ((*it)->getPosition().second == piece.getPosition().second &&
+                  (*it)->getPosition().first > piece.getPosition().first)
                {
-                  if ((*it)->getPosition().first < hit_piece->getPosition().first)
+                  if (hit_piece_flag &&
+                     (*it)->getPosition().first < hit_piece->getPosition().first)
                   {
                      hit_piece = *it;
                   }
-               }
-               else 
-               {
-                  hit_piece = *it;
-                  hit_piece_flag = true;
-               }
-            }
-            if (slinger_flag)
-            {
-               if ((*it)->getPosition().second > piece.getPosition().second &&
-                   (*it)->getPosition().second <= BOARD_COORD.second + BOARD_SIDE_LENGTH)
-               {
-                  if (slinger_hit_piece_flag)
+                  else
                   {
-                     if ((*it)->getPosition().second < hit_piece->getPosition().second)
+                     hit_piece = *it;
+                     hit_piece_flag = true;
+                  }
+               }
+               if (slinger_flag)
+               {
+                  if ((*it)->getPosition().first == piece.getPosition().first &&
+                     (*it)->getPosition().second > piece.getPosition().second)
+                  {
+                     if (slinger_hit_piece_flag &&
+                        (*it)->getPosition().second < hit_piece->getPosition().second)
                      {
-                        hit_piece = *it;
+                        slinger_hit_piece = *it;
+                     }
+                     else
+                     {
+                        slinger_hit_piece = *it;
+                        slinger_hit_piece_flag = true;
                      }
                   }
-                  else 
-                  {
-                     slinger_hit_piece = *it;
-                     slinger_hit_piece_flag = true;
-                  }
-               }    
+               }
             }
          }
 
@@ -527,6 +563,164 @@ void Game_c::detectHit(Piece_n::Piece_c& piece, std::vector<PiecePtr>& pieces)
          break;
       }
    }
+
+   //std::vector<PiecePtr>::iterator it;
+   //for (it = pieces.begin(); it != pieces.end(); ++it)
+   //{
+   //   if ((*it)->getPlayState() != Piece_n::RESERVE)
+   //   {
+   //      switch (piece.getDirection())
+   //      {
+   //      case Piece_n::UP:
+   //      {
+   //         if ((*it)->getPosition().first == piece.getPosition().first &&
+   //            (*it)->getPosition().second < piece.getPosition().second)
+   //         {
+   //            if (hit_piece_flag &&
+   //               (*it)->getPosition().second > hit_piece->getPosition().second)
+   //            {
+   //               hit_piece = *it;
+   //            }
+   //            else
+   //            {
+   //               hit_piece = *it;
+   //               hit_piece_flag = true;
+   //            }
+   //         }
+   //         if (slinger_flag)
+   //         {
+   //            if ((*it)->getPosition().second == piece.getPosition().second &&
+   //               (*it)->getPosition().first > piece.getPosition().first)
+   //            {
+   //               if (slinger_hit_piece_flag &&
+   //                  (*it)->getPosition().first < slinger_hit_piece->getPosition().first)
+   //               {
+   //                  slinger_hit_piece = *it;
+   //               }
+   //               else
+   //               {
+   //                  slinger_hit_piece = *it;
+   //                  slinger_hit_piece_flag = true;
+   //               }
+   //            }
+   //         }
+   //         break;
+   //      }
+   //      case Piece_n::DOWN:
+   //      {
+   //         if ((*it)->getPosition().first == piece.getPosition().first &&
+   //            (*it)->getPosition().second > piece.getPosition().second)
+   //         {
+   //            if (hit_piece_flag &&
+   //               (*it)->getPosition().second < hit_piece->getPosition().second)
+   //            {
+   //               hit_piece = *it;
+   //            }
+   //            else
+   //            {
+   //               hit_piece = *it;
+   //               hit_piece_flag = true;
+   //            }
+   //         }
+   //         if (slinger_flag)
+   //         {
+   //            if ((*it)->getPosition().second == piece.getPosition().second &&
+   //               (*it)->getPosition().first < piece.getPosition().first)
+   //            {
+   //               if (slinger_hit_piece_flag &&
+   //                  (*it)->getPosition().first > slinger_hit_piece->getPosition().first)
+   //               {
+   //                  slinger_hit_piece = *it;
+   //               }
+   //               else
+   //               {
+   //                  slinger_hit_piece = *it;
+   //                  slinger_hit_piece_flag = true;
+   //               }
+   //            }
+   //         }
+   //         break;
+   //      }
+   //      case Piece_n::LEFT:
+   //      {
+   //         if ((*it)->getPosition().second == piece.getPosition().second &&
+   //            (*it)->getPosition().first < piece.getPosition().first)
+   //         {
+   //            if (hit_piece_flag &&
+   //               (*it)->getPosition().first > hit_piece->getPosition().first)
+   //            {
+   //               hit_piece = *it;
+   //            }
+   //            else
+   //            {
+   //               hit_piece = *it;
+   //               hit_piece_flag = true;
+   //            }
+   //         }
+   //         if (slinger_flag)
+   //         {
+   //            if ((*it)->getPosition().first == piece.getPosition().first &&
+   //               (*it)->getPosition().second < piece.getPosition().second)
+   //            {
+   //               if (slinger_hit_piece_flag &&
+   //                  (*it)->getPosition().second > hit_piece->getPosition().second)
+   //               {
+   //                  slinger_hit_piece = *it;
+   //               }
+   //               else
+   //               {
+   //                  slinger_hit_piece = *it;
+   //                  slinger_hit_piece_flag = true;
+   //               }
+   //            }
+   //         }
+   //         break;
+   //      }
+   //      case Piece_n::RIGHT:
+   //      {
+   //         if ((*it)->getPosition().second == piece.getPosition().second &&
+   //            (*it)->getPosition().first > piece.getPosition().first)
+   //         {
+   //            if (hit_piece_flag &&
+   //               (*it)->getPosition().first < hit_piece->getPosition().first)
+   //            {
+   //               hit_piece = *it;
+   //            }
+   //            else
+   //            {
+   //               hit_piece = *it;
+   //               hit_piece_flag = true;
+   //            }
+   //         }
+   //         if (slinger_flag)
+   //         {
+   //            if ((*it)->getPosition().first == piece.getPosition().first &&
+   //               (*it)->getPosition().second > piece.getPosition().second)
+   //            {
+   //               if (slinger_hit_piece_flag &&
+   //                  (*it)->getPosition().second < hit_piece->getPosition().second)
+   //               {
+   //                  slinger_hit_piece = *it;
+   //               }
+   //               else
+   //               {
+   //                  slinger_hit_piece = *it;
+   //                  slinger_hit_piece_flag = true;
+   //               }
+   //            }
+   //         }
+   //         break;
+   //      }
+   //      }
+
+   //      // any hit pieces are set to DEAD at the end of a loop
+   //      hit_piece->nextPlayState();
+   //      if (slinger_flag)
+   //      {
+   //         slinger_hit_piece->nextPlayState();
+   //      }
+   //   }
+   //}
 }
 
 bool Game_c::gameOver()

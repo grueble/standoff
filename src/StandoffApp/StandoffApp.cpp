@@ -71,7 +71,7 @@ int StandoffApp_c::run()
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void StandoffApp_c::handleLmbDown(const SDL_Event& e)
 {
-   if (!mCurrentGame.moved() && !mCurrentGame.deployed())
+   if (mCurrentGame.getCurrentMove().mCurrentAction == Game_n::NONE) // !mCurrentGame.moved() && !mCurrentGame.deployed())
    {
       /*
        * transform the mouse click event's coordinate in pixels into a
@@ -87,7 +87,8 @@ void StandoffApp_c::handleLmbDown(const SDL_Event& e)
        * or in play) to determine if the mouse click event selects a piece
        */
       bool piece_hit_flag = false;
-      const std::vector<Game_n::PiecePtr>& pieces = (mCurrentGame.mCurrentTurn % 2) ? mCurrentGame.getPlayer1Pieces() : mCurrentGame.getPlayer2Pieces();
+      const std::vector<Game_n::PiecePtr>& pieces = 
+         (mCurrentGame.mCurrentTurn % 2) ? mCurrentGame.getPlayer1Pieces() : mCurrentGame.getPlayer2Pieces();
       std::vector<Game_n::PiecePtr>::const_iterator it;
       for (it = pieces.begin(); it != pieces.end(); ++it)
       {
@@ -102,31 +103,35 @@ void StandoffApp_c::handleLmbDown(const SDL_Event& e)
        * if we did not hit a piece with this click AND a piece is already
        * selected, attempt to move the current piece to the click position
        */
-      if (!piece_hit_flag && mCurrentGame.getCurrentPiece() != nullptr)
+      if (!piece_hit_flag && mCurrentGame.getCurrentPiece() != nullptr && 
+          mCurrentGame.getCurrentPiece()->getPlayState() == Piece_n::RESERVE)
       {
-         if (mCurrentGame.getCurrentPiece()->getPlayState() == Piece_n::RESERVE)
-         {
-            mCurrentGame.move(screen_tile_coord);
-         }
+         mCurrentGame.move(screen_tile_coord);
       }
    }
 }
 
 void StandoffApp_c::handleKeyDown(const SDL_Event& e)
 {
+   std::cout << "Key Input" << std::endl;
+
    switch(e.key.keysym.sym)
    {
       case SDLK_RETURN :
       {
          // if the current player has moved and we aren't waiting for a deployment to complete...
-         if (mCurrentGame.moved() && !mCurrentGame.deployed())
+         if (mCurrentGame.getCurrentMove().mCurrentAction != Game_n::NONE && 
+             mCurrentGame.getCurrentMove().mCurrentAction != Game_n::PRE_DEPLOY)
          {
             // and neither player has just won the game...
             if (!mCurrentGame.gameOver())
             {
+               std::cout << "PASSING TURN w/" << mCurrentGame.getCurrentMove().mCurrentAction << std::endl;
+
                // resolve a shootout if one has been called
-               if (mCurrentGame.getShootoutFlag())
+               if (mCurrentGame.getCurrentMove().mCurrentAction == Game_n::SHOOTOUT)
                {
+                  std::cout << "SHOOT" << std::endl;
                   mCurrentGame.shootout();
                }
 
@@ -143,7 +148,7 @@ void StandoffApp_c::handleKeyDown(const SDL_Event& e)
       case SDLK_BACKSPACE :
       {
          // if the current player has moved...
-         if (mCurrentGame.moved())
+         if (mCurrentGame.getCurrentMove().mCurrentAction != Game_n::NONE)
          {
             mCurrentGame.revertMove();
          }
@@ -151,16 +156,19 @@ void StandoffApp_c::handleKeyDown(const SDL_Event& e)
       }
       case SDLK_SPACE :
       {
-         // if the current player hasn't moved yet and we aren't waiting for a deployment to complete...
-         if (!mCurrentGame.moved() && !mCurrentGame.deployed())
+         // if the current player hasn't performed any actions this turn
+         if (mCurrentGame.getCurrentMove().mCurrentAction == Game_n::NONE)
          {
-            mCurrentGame.flagShootout();
+            std::cout << "SHOOTOUT FLAG SET" << std::endl;
+            mCurrentGame.getCurrentMove().mCurrentAction = Game_n::SHOOTOUT;
          }
          break;
       }
       case SDLK_UP :
       {
-         if (mCurrentGame.getCurrentPiece() != nullptr) 
+         if (mCurrentGame.getCurrentPiece() != nullptr &&
+             (mCurrentGame.getCurrentMove().mCurrentAction == Game_n::NONE ||
+              mCurrentGame.getCurrentMove().mCurrentAction == Game_n::PRE_DEPLOY))
          { 
             mCurrentGame.rotate(Piece_n::UP);
          }
@@ -168,7 +176,9 @@ void StandoffApp_c::handleKeyDown(const SDL_Event& e)
       } 
       case SDLK_DOWN :
       {
-         if (mCurrentGame.getCurrentPiece() != nullptr) 
+         if (mCurrentGame.getCurrentPiece() != nullptr &&
+             (mCurrentGame.getCurrentMove().mCurrentAction == Game_n::NONE ||
+              mCurrentGame.getCurrentMove().mCurrentAction == Game_n::PRE_DEPLOY))
          { 
             mCurrentGame.rotate(Piece_n::DOWN);
          }
@@ -176,7 +186,9 @@ void StandoffApp_c::handleKeyDown(const SDL_Event& e)
       }
       case SDLK_LEFT :
       {
-         if (mCurrentGame.getCurrentPiece() != nullptr) 
+         if (mCurrentGame.getCurrentPiece() != nullptr &&
+             (mCurrentGame.getCurrentMove().mCurrentAction == Game_n::NONE ||
+              mCurrentGame.getCurrentMove().mCurrentAction == Game_n::PRE_DEPLOY))
          { 
             mCurrentGame.rotate(Piece_n::LEFT);
          }
@@ -184,7 +196,9 @@ void StandoffApp_c::handleKeyDown(const SDL_Event& e)
       } 
       case SDLK_RIGHT :
       {
-         if (mCurrentGame.getCurrentPiece() != nullptr) 
+         if (mCurrentGame.getCurrentPiece() != nullptr &&
+             (mCurrentGame.getCurrentMove().mCurrentAction == Game_n::NONE ||
+              mCurrentGame.getCurrentMove().mCurrentAction == Game_n::PRE_DEPLOY))
          { 
             mCurrentGame.rotate(Piece_n::RIGHT);
          }
@@ -194,7 +208,7 @@ void StandoffApp_c::handleKeyDown(const SDL_Event& e)
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// - Drawing Functions: draw, drawMove, drawTileBaseSprite
+// - draw
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void StandoffApp_c::draw()
 {
