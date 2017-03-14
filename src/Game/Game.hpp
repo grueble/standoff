@@ -29,10 +29,10 @@ namespace Game_n
    static const std::vector<std::pair<int, int>> P2_GUNSLINGER_DEPLOYMENT_ZONES =
    {
       std::make_pair(BOARD_COORD.first + 1, BOARD_COORD.second),
-      std::make_pair(BOARD_COORD.first + 3, BOARD_COORD.second),
+      std::make_pair(BOARD_COORD.first + 5, BOARD_COORD.second),
       std::make_pair(BOARD_COORD.first + 7, BOARD_COORD.second),
       std::make_pair(BOARD_COORD.first, BOARD_COORD.second + 1),
-      std::make_pair(BOARD_COORD.first, BOARD_COORD.second + 3),
+      std::make_pair(BOARD_COORD.first, BOARD_COORD.second + 5),
       std::make_pair(BOARD_COORD.first, BOARD_COORD.second + 7)
    };
 

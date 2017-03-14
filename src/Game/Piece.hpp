@@ -119,6 +119,8 @@ namespace Piece_n
       // - none
       void nextPlayState();
 
+      void setPlayState(const PlayState_e& play_state);
+
       // \Name: getTeam
       // \Description:
       // - returns the mPieceType member field

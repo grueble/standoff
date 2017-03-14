@@ -103,9 +103,9 @@ void StandoffApp_c::handleLmbDown(const SDL_Event& e)
        * if we did not hit a piece with this click AND a piece is already
        * selected, attempt to move the current piece to the click position
        */
-      if (!piece_hit_flag && mCurrentGame.getCurrentPiece() != nullptr && 
-          mCurrentGame.getCurrentPiece()->getPlayState() == Piece_n::RESERVE)
+      if (!piece_hit_flag && mCurrentGame.getCurrentPiece() != nullptr)
       {
+         std::cout << "MOVING" << std::endl;
          mCurrentGame.move(screen_tile_coord);
       }
    }
@@ -113,7 +113,7 @@ void StandoffApp_c::handleLmbDown(const SDL_Event& e)
 
 void StandoffApp_c::handleKeyDown(const SDL_Event& e)
 {
-   std::cout << "Key Input" << std::endl;
+   std::cout << "Key Input w/" << mCurrentGame.getCurrentMove().mCurrentAction  << std::endl;
 
    switch(e.key.keysym.sym)
    {
@@ -148,10 +148,11 @@ void StandoffApp_c::handleKeyDown(const SDL_Event& e)
       case SDLK_BACKSPACE :
       {
          // if the current player has moved...
-         if (mCurrentGame.getCurrentMove().mCurrentAction != Game_n::NONE)
+         /*if (mCurrentGame.getCurrentMove().mCurrentAction != Game_n::NONE)
          {
             mCurrentGame.revertMove();
-         }
+         }*/
+         mCurrentGame.revertMove();
          break;
       }
       case SDLK_SPACE :

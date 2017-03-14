@@ -41,7 +41,7 @@ void Piece_c::setPosition(const std::pair<int, int>& new_position)
          if (this->isValidDeployment(new_position))
          {
             mPosition = new_position;
-            this->nextPlayState();
+            this->setPlayState(LIVE);
          }
          else 
          {
@@ -108,6 +108,11 @@ void Piece_c::nextPlayState()
          break;
       }
    }
+}
+
+void Piece_c::setPlayState(const PlayState_e& play_state)
+{
+   mPlayState = play_state;
 }
 
 const Team_e& Piece_c::getTeam() const
