@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <vector>
 #include <string>
-#include <unordered_map>
+// #include <unordered_map>
 #include "LTexture.hpp"
 
 // make sure to include the correct .dll in the running directory for the executable
@@ -46,6 +46,19 @@ namespace ResourceManager_n
       P1_MANHOLE_TILE,
       P2_SCORING_TILE,
       P2_MANHOLE_TILE
+   };
+
+   struct Sprite_s
+   {
+      Sprite_s(Sprite_e sprite_id, SDL_Rect clip) :
+         mSpriteId(sprite_id),
+         mClip(clip)
+      {
+      
+      }
+
+      Sprite_e mSpriteId;
+      SDL_Rect mClip; 
    };
 
    class ResourceManager_c
@@ -101,7 +114,7 @@ namespace ResourceManager_n
       // \Returns
       // - SDL_Texture*, pointer to the requested texture
       void renderSpriteAt(
-         Sprite_e sprite, const std::pair<int, int>& screen_tile_coord, double degrees = 0);
+         Sprite_e sprite_id, const std::pair<int, int>& screen_tile_coord, double degrees = 0);
 
    protected:
       void createSpriteMap();
@@ -117,9 +130,11 @@ namespace ResourceManager_n
       LTexture gSpritesheetTexture;
 
       // mapping of sprite type to spritesheet clip
-      typedef std::unordered_map<Sprite_e, SDL_Rect> SpriteMap;
-      SpriteMap mSpriteMap;
+      // typedef std::unordered_map<Sprite_e, SDL_Rect> SpriteMap;
+      // SpriteMap mSpriteMap;
+
+      std::vector<Sprite_s> mSprites;
    };
 }
 
-#endif _RESOURCE_MANAGER_HPP_
+#endif

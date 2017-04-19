@@ -1,15 +1,22 @@
 #include "StandoffApp.hpp"
-#include "iostream"
+#include <iostream>
 
 using namespace StandoffApp_n;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // - Constructor and Destructor
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-StandoffApp_c::StandoffApp_c(ResourceManager_n::ResourceManager_c& resource_manager, SDL_Renderer* renderer) :
+StandoffApp_c::StandoffApp_c(ResourceManager_n::ResourceManager_c& resource_manager, 
+                             ConnectHandler_n::ConnectHandler_c& connect_handler,
+                             ConnectHandler_n::Address_c& server_address,
+                             SDL_Renderer* renderer,
+                             Mode_e mode) :
    mResourceManager(resource_manager),
+   mConnectHandler(connect_handler),
+   mServerAddress(server_address),
    gRenderer(renderer),
-   mCurrentGame()
+   mCurrentGame(),
+   mMode(mode)
 {
 
 }
@@ -49,7 +56,7 @@ int StandoffApp_c::run()
             // user presses a mouse button
             case SDL_MOUSEBUTTONDOWN:
             {
-               if (e.button.button == SDL_BUTTON_LEFT)
+               if (e.button.button == SDL_BUTTON_LEFT && myTurn())
                {
                   this->handleLmbDown(e);
                }
@@ -57,7 +64,10 @@ int StandoffApp_c::run()
             // user presses a key
             case SDL_KEYDOWN:
             {
-               this->handleKeyDown(e);
+               if (myTurn())
+               {
+                  this->handleKeyDown(e);
+               }
             }
          }
       }
@@ -87,8 +97,7 @@ void StandoffApp_c::handleLmbDown(const SDL_Event& e)
        * or in play) to determine if the mouse click event selects a piece
        */
       bool piece_hit_flag = false;
-      const std::vector<Game_n::PiecePtr>& pieces = 
-         (mCurrentGame.mCurrentTurn % 2) ? mCurrentGame.getPlayer1Pieces() : mCurrentGame.getPlayer2Pieces();
+      const std::vector<Game_n::PiecePtr>& pieces = getMyPieces();
       std::vector<Game_n::PiecePtr>::const_iterator it;
       for (it = pieces.begin(); it != pieces.end(); ++it)
       {
@@ -119,6 +128,17 @@ void StandoffApp_c::handleKeyDown(const SDL_Event& e)
    {
       case SDLK_RETURN :
       {
+         // if this is a networked game...
+         if (mMode != LOCAL)
+         {
+            // update the server's copy of the current game
+            if (!update())
+            {
+               // if the update fails then don't allow the turn to pass
+               break;
+            }
+         }
+
          // if the current player has moved and we aren't waiting for a deployment to complete...
          if (mCurrentGame.getCurrentMove().mCurrentAction != Game_n::NONE && 
              mCurrentGame.getCurrentMove().mCurrentAction != Game_n::PRE_DEPLOY)
@@ -238,15 +258,25 @@ void StandoffApp_c::draw()
          {
             case Piece_n::PAWN:
             {
-               mResourceManager.renderSpriteAt(ResourceManager_n::P1_PAWN, (*p1_it)->getPosition(), piece_direction); break;
+               mResourceManager.renderSpriteAt(
+                  ResourceManager_n::P1_PAWN, (*p1_it)->getPosition(), piece_direction); 
+               break;
             }
             case Piece_n::GUN:
             {
-               mResourceManager.renderSpriteAt(ResourceManager_n::P1_GUN, (*p1_it)->getPosition(), piece_direction); break;
+               mResourceManager.renderSpriteAt(
+                  ResourceManager_n::P1_GUN, (*p1_it)->getPosition(), piece_direction); 
+               break;
             }
             case Piece_n::SLINGER:
             {
-               mResourceManager.renderSpriteAt(ResourceManager_n::P1_SLINGER, (*p1_it)->getPosition(), piece_direction); break;
+               mResourceManager.renderSpriteAt(
+                  ResourceManager_n::P1_SLINGER, (*p1_it)->getPosition(), piece_direction); 
+               break;
+            }
+            default :
+            {
+               break;
             }
          }
       }
@@ -269,15 +299,21 @@ void StandoffApp_c::draw()
       {
          case Piece_n::PAWN:
          {
-            mResourceManager.renderSpriteAt(ResourceManager_n::P2_PAWN, (*p2_it)->getPosition(), piece_direction); break;
+            mResourceManager.renderSpriteAt(
+               ResourceManager_n::P2_PAWN, (*p2_it)->getPosition(), piece_direction); 
+            break;
          }
          case Piece_n::GUN:
          {
-            mResourceManager.renderSpriteAt(ResourceManager_n::P2_GUN, (*p2_it)->getPosition(), piece_direction); break;
+            mResourceManager.renderSpriteAt(
+               ResourceManager_n::P2_GUN, (*p2_it)->getPosition(), piece_direction); 
+            break;
          }
          case Piece_n::SLINGER:
          {
-            mResourceManager.renderSpriteAt(ResourceManager_n::P2_SLINGER, (*p2_it)->getPosition(), piece_direction); break;
+            mResourceManager.renderSpriteAt(
+               ResourceManager_n::P2_SLINGER, (*p2_it)->getPosition(), piece_direction); 
+            break;
          }
       }
    }
@@ -285,12 +321,107 @@ void StandoffApp_c::draw()
    // render the cursor at the current piece's position
    if (mCurrentGame.getCurrentPiece() != nullptr)
    {
-      mResourceManager.renderSpriteAt(ResourceManager_n::CURSOR, mCurrentGame.getCurrentPiece()->getPosition());
+      mResourceManager.renderSpriteAt(
+         ResourceManager_n::CURSOR, mCurrentGame.getCurrentPiece()->getPosition());
    }
 
    // render the briefcase at it's current location
-   mResourceManager.renderSpriteAt(ResourceManager_n::BRIEFCASE, mCurrentGame.getBriefcasePosition());
+   mResourceManager.renderSpriteAt(
+      ResourceManager_n::BRIEFCASE, mCurrentGame.getBriefcasePosition());
   
    // update screen
    SDL_RenderPresent(gRenderer);
+}
+
+bool StandoffApp_c::update()
+{
+   bool ret_val = false;
+   bool send_flag = false;
+   unsigned char data[ConnectHandler_n::MAX_PACKET_SIZE]; 
+
+   switch (mCurrentGame.getCurrentMove().mCurrentAction)
+   {
+      case Game_n::MOVE :
+      case Game_n::DEPLOY :
+      case Game_n::ROTATE :
+      {
+         data[0] = 4; // Request_e::MOVE_ACTION
+         data[1] = mCurrentGame.getCurrentMove().mPrevPosition.first;
+         data[2] = mCurrentGame.getCurrentMove().mPrevPosition.second;
+         data[3] = mCurrentGame.getCurrentMove().mMovedPiece->getPosition().first;
+         data[4] = mCurrentGame.getCurrentMove().mMovedPiece->getPosition().second;
+         data[5] = static_cast<int>(mCurrentGame.getCurrentMove().mMovedPiece->getDirection());
+         send_flag = true;
+         break;
+      }
+      case Game_n::SHOOTOUT :
+      {
+         data[0] = 5; // Request_e::MOVE_ACTION
+         send_flag = true;
+         break;
+      }
+      default :
+      {
+         printf("No rule to send submitted Action_e!\n");
+         break;
+      }
+   }
+
+   if (send_flag)
+   {
+      ret_val = mConnectHandler.sendData(mServerAddress, data);
+      if (!ret_val)
+      { 
+         printf("Message failed to send to client!\n");
+      }
+   }
+   
+   return ret_val;
+}
+
+const std::vector<Game_n::PiecePtr>& StandoffApp_c::getMyPieces()
+{
+   switch (mMode)
+   {
+      case LOCAL :
+      {
+         return (mCurrentGame.mCurrentTurn % 2) ? mCurrentGame.getPlayer1Pieces() : mCurrentGame.getPlayer2Pieces();
+      }
+      case PLAYER_ONE :
+      {
+         return mCurrentGame.getPlayer1Pieces();
+      }
+      case PLAYER_TWO :
+      {
+         return mCurrentGame.getPlayer2Pieces();
+      }
+      default :
+      {
+         // should never hit this case, mMode is instantiated at construction
+         break;
+      }
+   }
+}
+
+bool StandoffApp_c::myTurn()
+{
+   switch (mMode)
+   {
+      case LOCAL :
+      {
+         return true;
+      }
+      case PLAYER_ONE :
+      {
+         return (mCurrentGame.mCurrentTurn % 2) ? true : false;
+      }
+      case PLAYER_TWO :
+      {
+         return (mCurrentGame.mCurrentTurn % 2) ? false : true;
+      }
+      default :
+      {
+         return false;
+      }
+   }
 }

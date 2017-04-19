@@ -19,8 +19,8 @@ Game_c::Game_c() :
 
 Game_c::~Game_c()
 {
-   mPlayer1.mPieces.clear();
-   mPlayer2.mPieces.clear();
+   mPlayer1Pieces.clear();
+   mPlayer2Pieces.clear();
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -94,39 +94,39 @@ void Game_c::rotate(const Piece_n::Direction_e& rotate_direction)
 void Game_c::shootout()
 {
    std::vector<PiecePtr>::iterator p1_it;
-   for (p1_it = mPlayer1.mPieces.begin(); p1_it != mPlayer1.mPieces.end(); ++p1_it)
+   for (p1_it = mPlayer1Pieces.begin(); p1_it != mPlayer1Pieces.end(); ++p1_it)
    {
       if ((*p1_it)->getPlayState() != Piece_n::RESERVE && (*p1_it)->getPieceType() != Piece_n::PAWN)
       {
          std::cout << "P1 is DOGY" << std::endl;
-         detectHit(**p1_it, mPlayer2.mPieces);
+         detectHit(**p1_it, mPlayer2Pieces);
       }
    }
    std::vector<PiecePtr>::iterator p2_it;
-   for (p2_it = mPlayer2.mPieces.begin(); p2_it != mPlayer2.mPieces.end(); ++p2_it)
+   for (p2_it = mPlayer2Pieces.begin(); p2_it != mPlayer2Pieces.end(); ++p2_it)
    {
       if ((*p2_it)->getPlayState() != Piece_n::RESERVE && (*p2_it)->getPieceType() != Piece_n::PAWN)
       {
          std::cout << "P2 is DOGY" << std::endl;
-         detectHit(**p2_it, mPlayer1.mPieces);
+         detectHit(**p2_it, mPlayer1Pieces);
       }
    }
 
    std::cout << "Hit Detection Completed" << std::endl;
 
-   for (p1_it = mPlayer1.mPieces.begin(); p1_it != mPlayer1.mPieces.end(); p1_it++)
+   for (p1_it = mPlayer1Pieces.begin(); p1_it != mPlayer1Pieces.end(); p1_it++)
    {
       if ((*p1_it)->getPlayState() == Piece_n::DEAD)
       {
-         p1_it = mPlayer1.mPieces.erase(p1_it);
+         p1_it = mPlayer1Pieces.erase(p1_it);
       }
    }
 
-   for (p2_it = mPlayer2.mPieces.begin(); p2_it != mPlayer2.mPieces.end(); p2_it++)
+   for (p2_it = mPlayer2Pieces.begin(); p2_it != mPlayer2Pieces.end(); p2_it++)
    {
       if ((*p2_it)->getPlayState() == Piece_n::DEAD)
       {
-         p2_it = mPlayer2.mPieces.erase(p2_it);
+         p2_it = mPlayer2Pieces.erase(p2_it);
       }
    }
 }
@@ -210,12 +210,12 @@ std::pair<int, int>& Game_c::getBriefcasePosition()
 
 const std::vector<PiecePtr>& Game_c::getPlayer1Pieces()
 {
-   return mPlayer1.mPieces;
+   return mPlayer1Pieces;
 }
 
 const std::vector<PiecePtr>& Game_c::getPlayer2Pieces()
 {
-   return mPlayer2.mPieces;
+   return mPlayer2Pieces;
 }
 
 Move_s& Game_c::getCurrentMove()
@@ -248,7 +248,7 @@ void Game_c::initPieces()
    // add pawns
    for (int i = 0; i < NUM_PAWNS; ++i)
    {
-      mPlayer1.mPieces.push_back(
+      mPlayer1Pieces.push_back(
          std::make_shared<Piece_n::Piece_c>(
             Piece_n::PAWN,
             P1_GUNSLINGER_DEPLOYMENT_ZONES,
@@ -264,7 +264,7 @@ void Game_c::initPieces()
    // add guns
    for (int i = 0; i < NUM_GUNS; ++i)
    {
-      mPlayer1.mPieces.push_back(
+      mPlayer1Pieces.push_back(
          std::make_shared<Piece_n::Piece_c>(
             Piece_n::GUN,
             P1_GUNSLINGER_DEPLOYMENT_ZONES,
@@ -280,7 +280,7 @@ void Game_c::initPieces()
    // add slingers
    for (int i = 0; i < NUM_SLINGERS; ++i)
    {
-      mPlayer1.mPieces.push_back(
+      mPlayer1Pieces.push_back(
          std::make_shared<Piece_n::Piece_c>(
             Piece_n::SLINGER,
             P1_GUNSLINGER_DEPLOYMENT_ZONES,
@@ -301,15 +301,15 @@ void Game_c::initPieces()
       {
          std::make_pair(BOARD_COORD.first + 4, BOARD_COORD.second + 7),
          std::make_pair(BOARD_COORD.first + 5, BOARD_COORD.second + 5),
-      std::make_pair(BOARD_COORD.first + 6, BOARD_COORD.second + 6),
-      std::make_pair(BOARD_COORD.first + 7, BOARD_COORD.second + 4)
+         std::make_pair(BOARD_COORD.first + 6, BOARD_COORD.second + 6),
+         std::make_pair(BOARD_COORD.first + 7, BOARD_COORD.second + 4)
       }
    );
 
    // add pawns
    for (int i = 0; i < NUM_PAWNS; ++i)
    {
-      mPlayer2.mPieces.push_back(
+      mPlayer2Pieces.push_back(
          std::make_shared<Piece_n::Piece_c>(
             Piece_n::PAWN,
             P2_GUNSLINGER_DEPLOYMENT_ZONES,
@@ -325,7 +325,7 @@ void Game_c::initPieces()
    // add guns
    for (int i = 0; i < NUM_GUNS; ++i)
    {
-      mPlayer2.mPieces.push_back(
+      mPlayer2Pieces.push_back(
          std::make_shared<Piece_n::Piece_c>(
             Piece_n::GUN,
             P2_GUNSLINGER_DEPLOYMENT_ZONES,
@@ -341,7 +341,7 @@ void Game_c::initPieces()
    // add slingers
    for (int i = 0; i < NUM_SLINGERS; ++i)
    {
-      mPlayer2.mPieces.push_back(
+      mPlayer2Pieces.push_back(
          std::make_shared<Piece_n::Piece_c>(
             Piece_n::SLINGER,
             P2_GUNSLINGER_DEPLOYMENT_ZONES,
@@ -570,6 +570,11 @@ void Game_c::detectHit(Piece_n::Piece_c& piece, std::vector<PiecePtr>& pieces)
          {
             slinger_hit_piece->setPlayState(Piece_n::DEAD);
          }
+         break;
+      }
+      default :
+      {
+         // in case a reserve piece is hit inadvertently 
          break;
       }
    }

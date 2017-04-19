@@ -1,5 +1,5 @@
 #include "ResourceManager.hpp"
-#include "iostream"
+#include <iostream>
 
 using namespace ResourceManager_n;
 
@@ -32,7 +32,7 @@ bool ResourceManager_c::init()
    else
    {
       // set texture filtering to linear
-      if( !SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "1" ) )
+      if(!SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1"))
       {
          printf( "Warning: Linear texture filtering not enabled!" );
       }
@@ -125,12 +125,12 @@ SDL_Renderer* ResourceManager_c::getRenderer()
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // - renderSpriteAt
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void ResourceManager_c::renderSpriteAt(Sprite_e sprite, 
+void ResourceManager_c::renderSpriteAt(Sprite_e sprite_id, 
                                        const std::pair<int, int>& screen_tile_coord, 
                                        double degrees)
 {
    SDL_Rect dest_rect;
-   if (sprite != BOARD)
+   if (sprite_id != BOARD)
    {  
       dest_rect = { 
          screen_tile_coord.first * TILE_WIDTH, 
@@ -139,10 +139,19 @@ void ResourceManager_c::renderSpriteAt(Sprite_e sprite,
          TILE_WIDTH
       };
    
-      SpriteMap::iterator sprite_it = mSpriteMap.find(sprite);
+      /*SpriteMap::iterator sprite_it = mSpriteMap.find(sprite);
       if (sprite_it != mSpriteMap.end())
       {
          gSpritesheetTexture.render(gRenderer, &dest_rect, &sprite_it->second, degrees);
+      }*/
+
+      std::vector<Sprite_s>::iterator it;
+      for (it = mSprites.begin(); it != mSprites.end(); ++it)
+      {
+         if (it->mSpriteId == sprite_id)
+         {
+            gSpritesheetTexture.render(gRenderer, &dest_rect, &it->mClip, degrees);
+         }
       }
    }
    else // special case for drawing the board
@@ -167,8 +176,10 @@ void ResourceManager_c::createSpriteMap()
 
    for (int sprite_int = P2_PAWN; sprite_int != P2_MANHOLE_TILE; ++sprite_int)
    {
-      std::pair<Sprite_e, SDL_Rect> sprite = std::pair<Sprite_e, SDL_Rect>(static_cast<Sprite_e>(sprite_int), clip);
-      mSpriteMap.insert(sprite);
+      /*std::pair<Sprite_e, SDL_Rect> sprite = std::pair<Sprite_e, SDL_Rect>(static_cast<Sprite_e>(sprite_int), clip);
+      mSpriteMap.insert(sprite);*/
+
+      mSprites.push_back(Sprite_s(static_cast<Sprite_e>(sprite_int), clip));
 
       if (clip.x < TILE_WIDTH * 8) // spritesheet.png contains 8 sprites/row
       {

@@ -1,6 +1,7 @@
 #ifndef _GAME_HPP_
 #define _GAME_HPP_
 
+#include <cstddef>
 #include <memory>
 #include "Piece.hpp"
 
@@ -60,19 +61,6 @@ namespace Game_n
       MOVE,
       ROTATE,
       SHOOTOUT,
-   };
-
-   // stores all of the data about a player
-   struct Player_s
-   {
-      Player_s() :
-         mUserId(0)
-      {
-
-      }
-
-      int mUserId;
-      std::vector<PiecePtr> mPieces;
    };
 
    // stores data about a staged move
@@ -190,7 +178,7 @@ namespace Game_n
       // - none
       // \Returns
       // - none
-      Move_s& Game_c::getCurrentMove();
+      Move_s& getCurrentMove();
 
       // \Name: gameOver
       // \Description:
@@ -225,8 +213,8 @@ namespace Game_n
       void detectHit(Piece_n::Piece_c& piece, std::vector<PiecePtr>& pieces);
 
       // stores references to the two Player_s objects initialized on construction
-      Player_s mPlayer1;
-      Player_s mPlayer2;
+      std::vector<PiecePtr> mPlayer1Pieces;
+      std::vector<PiecePtr> mPlayer2Pieces;
 
       // pointer to the current piece, if any
       PiecePtr mCurrentPiece;
@@ -238,4 +226,4 @@ namespace Game_n
    };
 }
 
-#endif _GAME_HPP_
+#endif

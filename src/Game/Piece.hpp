@@ -48,7 +48,7 @@ namespace Piece_n
       // - Piecetype_e& the type of Piece to create
       // - std::vector<std::pair<int, int>>& a list of valid deployments for this Piece
       Piece_c(const PieceType_e& piece_type,
-              const std::vector<std::pair<int, int>>& deployment_zones,
+              const std::vector<std::pair<int, int> >& deployment_zones,
               const std::pair<int, int> reserve_position,
               const Team_e& team);
 
@@ -168,7 +168,7 @@ namespace Piece_n
       // stores a Piece's available deployment zones
       // -> these are initialized differently based on PieceType
       // -> reference to one of three shared deployment zone vectors in Game_c
-      std::vector<std::pair<int, int>> mDeploymentZones;
+      std::vector<std::pair<int, int> > mDeploymentZones;
 
       // this Piece's current in-play status
       PlayState_e mPlayState;
@@ -178,4 +178,4 @@ namespace Piece_n
    };
 }
 
-#endif _PIECE_HPP_
+#endif

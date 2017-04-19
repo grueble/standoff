@@ -24,4 +24,4 @@ private:
    SDL_Texture* mTexture = NULL;
 };
 
-#endif _L_TEXTURE_HPP_
+#endif
