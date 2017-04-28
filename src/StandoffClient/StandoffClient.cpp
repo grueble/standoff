@@ -1,10 +1,13 @@
 #include "StandoffClient.hpp"
 #include <string>
 #include <iostream>
+#include <cstdio>
 #include <sstream>
 
 using namespace StandoffClient_n;
 
+// need to undef main in order to block SDL from hijacking the console
+#undef main
 int main(int argc, char* argv[])
 {
    ConnectHandler_n::ConnectHandler_c connect_handler;
@@ -17,7 +20,7 @@ int main(int argc, char* argv[])
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 StandoffClient_c::StandoffClient_c(ConnectHandler_n::ConnectHandler_c& connect_handler) :
    mConnectHandler(connect_handler),
-   mServerAddress(ConnectHandler_n::Address_c(127, 0, 0, 1, SERVER_PORT))
+   mServerAddress(ConnectHandler_n::Address_c(127,0,0,1,ConnectHandler_n::ConnectHandler_c::SERVER_PORT))
 {
 
 }
@@ -43,17 +46,17 @@ int StandoffClient_c::run()
    std::string input = "";
 
    // data is serialized into this buffer prior to sending
-   unsigned char data[ConnectHandler_n::MAX_PACKET_SIZE];
+   unsigned char data[ConnectHandler_n::MAX_PACKET_SIZE] = {0};
 
    // open a client socket
-   std::cout << "Enter a unique port ( > 1024 ) for your client application: ";
+   std::cout << "Enter a unique port ( > 1024 ) for your client application: " << std::endl;
    getline(std::cin, input);
    mConnectHandler.start(std::stoi(input)); 
 
    while (!(input.at(0) == 'Q' || input.at(0) == 'q'))
    { 
       std::cout << "(C)reate a new game" << std::endl;
-      std::cout << "(D)isplay active games" << std::endl;
+      std::cout << "(D)isplay a list of active games" << std::endl;
       std::cout << "(J)oin an existing game" << std::endl;
       std::cout << "(Q)uit" << std::endl;
       getline(std::cin, input);
@@ -63,6 +66,7 @@ int StandoffClient_c::run()
          case 'C' :
          case 'c' :
          {
+            std::cout << "Creating a new game..." << std::endl;
             std::cout << "(L)ocal" << std::endl;
             std::cout << "(N)etworked" << std::endl;
             getline(std::cin, input);
@@ -72,13 +76,14 @@ int StandoffClient_c::run()
                case 'l' :
                {
                   playApp(StandoffApp_n::LOCAL);
+                  break;
                }
                case 'M' :
                case 'm' :
                {
                   data[0] = 0x01; // ConnectHandler_n::CREATE_GAME 
                   if (!mConnectHandler.sendData(mServerAddress, data))
-                  {   
+                  {    
                      printf("Message failed to send to server!\n");
                   }
                   else 
@@ -106,6 +111,7 @@ int StandoffClient_c::run()
          case 'D' :
          case 'd' :
          {
+            std::cout << "Displaying a list of active games..." << std::endl;
             data[0] = 0x02; // ConnectHandler_n::FIND_GAMES 
             if (!mConnectHandler.sendData(mServerAddress, data))
             {   
@@ -155,6 +161,7 @@ int StandoffClient_c::run()
             {
                if (*it == game_id)
                {
+                  std::cout << "Joining game #" << game_id << "..." << std::endl;
                   data[0] = 0x01; // ConnectHandler_n::JOIN_GAME
                   data[1] = game_id;
                   if (!mConnectHandler.sendData(mServerAddress, data))
@@ -174,7 +181,7 @@ int StandoffClient_c::run()
          case 'Q' :
          case 'q' :
          {
-            // quit case
+            std::cout << "Quitting Standoff client application..." << std::endl;
             break;
          }
          default:

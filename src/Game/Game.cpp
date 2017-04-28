@@ -1,10 +1,19 @@
+#include "Game.hpp"
+#include "Piece.hpp"
 #include <vector>
 #include <iostream>
 
-#include "Game.hpp"
-#include "Piece.hpp"
-
 using namespace Game_n;
+
+const int& Game_c::BOARD_SIDE_LENGTH = 9;
+const std::pair<int,int>& Game_c::P1_RESERVE_COORD = std::make_pair(15, 9);
+const std::pair<int,int>& Game_c::P2_RESERVE_COORD = std::make_pair(3, 1);
+const std::pair<int, int>& Game_c::P1_SCORING_COORD = std::make_pair(13, 9);
+const std::pair<int, int>& Game_c::P2_SCORING_COORD = BOARD_COORD;
+const std::pair<int, int>& Game_c::BRIEFCASE_COORD = std::make_pair(9, 5);
+const int Game_c::NUM_PAWNS = 4;
+const int Game_c::NUM_GUNS = 6;
+const int Game_c::NUM_SLINGERS = 2;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // - Constructor and Destructor
@@ -34,8 +43,6 @@ void Game_c::move(const std::pair<int, int>& screen_tile_coord)
        screen_tile_coord.second >= BOARD_COORD.second &&
        screen_tile_coord.second < BOARD_COORD.second + BOARD_SIDE_LENGTH)
    {
-      std::cout << "Valid Click" << std::endl;
-
       // the briefcase moves with any piece that starts a move from its position
       if (mCurrentPiece->getPosition() == BRIEFCASE_COORD) 
       { 
@@ -98,7 +105,6 @@ void Game_c::shootout()
    {
       if ((*p1_it)->getPlayState() != Piece_n::RESERVE && (*p1_it)->getPieceType() != Piece_n::PAWN)
       {
-         std::cout << "P1 is DOGY" << std::endl;
          detectHit(**p1_it, mPlayer2Pieces);
       }
    }
@@ -107,12 +113,9 @@ void Game_c::shootout()
    {
       if ((*p2_it)->getPlayState() != Piece_n::RESERVE && (*p2_it)->getPieceType() != Piece_n::PAWN)
       {
-         std::cout << "P2 is DOGY" << std::endl;
          detectHit(**p2_it, mPlayer1Pieces);
       }
    }
-
-   std::cout << "Hit Detection Completed" << std::endl;
 
    for (p1_it = mPlayer1Pieces.begin(); p1_it != mPlayer1Pieces.end(); p1_it++)
    {
@@ -231,19 +234,25 @@ void Game_c::initPieces()
    // initialize player 1's starting reserve position (screen tile coordinates)
    std::pair<int, int> reserve_position = P1_RESERVE_COORD;
 
+   std::vector<std::pair<int, int>> p1_gunslinger_deployment_zones =
+   {
+      std::make_pair(6, 9), std::make_pair(8, 9), std::make_pair(12, 9),
+      std::make_pair(13, 2), std::make_pair(13, 4), std::make_pair(13, 8)
+   };
+
    // create the set of valid deployment positions for player 1
-   std::vector<std::pair<int, int>> p1_pawn_deployment_zones = P1_GUNSLINGER_DEPLOYMENT_ZONES;
-   std::vector<std::pair<int, int>>::iterator p1_it;
-   p1_it = p1_pawn_deployment_zones.begin();
-   p1_it = p1_pawn_deployment_zones.insert(
-      p1_it,
-      {
-         std::make_pair(BOARD_COORD.first + 1, BOARD_COORD.second + 4),
-         std::make_pair(BOARD_COORD.first + 2, BOARD_COORD.second + 3),
-      std::make_pair(BOARD_COORD.first + 3, BOARD_COORD.second + 2),
-      std::make_pair(BOARD_COORD.first + 4, BOARD_COORD.second + 1)
-      }
-   );
+   // std::vector<std::pair<int, int>> p1_pawn_deployment_zones = P1_GUNSLINGER_DEPLOYMENT_ZONES;
+   // std::vector<std::pair<int, int>>::iterator p1_it;
+   // p1_it = p1_pawn_deployment_zones.begin();
+   // p1_it = p1_pawn_deployment_zones.insert(
+   //    p1_it,
+   //    {
+   //       std::make_pair(BOARD_COORD.first + 1, BOARD_COORD.second + 4),
+   //       std::make_pair(BOARD_COORD.first + 2, BOARD_COORD.second + 3),
+   //       std::make_pair(BOARD_COORD.first + 3, BOARD_COORD.second + 2),
+   //       std::make_pair(BOARD_COORD.first + 4, BOARD_COORD.second + 1)
+   //    }
+   // );
 
    // add pawns
    for (int i = 0; i < NUM_PAWNS; ++i)
@@ -251,7 +260,7 @@ void Game_c::initPieces()
       mPlayer1Pieces.push_back(
          std::make_shared<Piece_n::Piece_c>(
             Piece_n::PAWN,
-            P1_GUNSLINGER_DEPLOYMENT_ZONES,
+            p1_gunslinger_deployment_zones,
             reserve_position,
             Piece_n::PLAYER_ONE));
       reserve_position.second--;
@@ -267,7 +276,7 @@ void Game_c::initPieces()
       mPlayer1Pieces.push_back(
          std::make_shared<Piece_n::Piece_c>(
             Piece_n::GUN,
-            P1_GUNSLINGER_DEPLOYMENT_ZONES,
+            p1_gunslinger_deployment_zones,
             reserve_position,
             Piece_n::PLAYER_ONE));
       reserve_position.second--;
@@ -283,7 +292,7 @@ void Game_c::initPieces()
       mPlayer1Pieces.push_back(
          std::make_shared<Piece_n::Piece_c>(
             Piece_n::SLINGER,
-            P1_GUNSLINGER_DEPLOYMENT_ZONES,
+            p1_gunslinger_deployment_zones,
             reserve_position,
             Piece_n::PLAYER_ONE));
       reserve_position.second--;
@@ -292,19 +301,25 @@ void Game_c::initPieces()
    // initialize player 2's starting reserve position (screen tile coordinates)
    reserve_position = P2_RESERVE_COORD;
 
+   std::vector<std::pair<int, int>> p2_gunslinger_deployment_zones =
+   {
+      std::make_pair(6, 1), std::make_pair(10, 1), std::make_pair(12, 1),
+      std::make_pair(5, 2), std::make_pair(5, 6), std::make_pair(5, 8)
+   };
+
    // create the set of valid deployment positions for player 2
-   std::vector<std::pair<int, int>> p2_pawn_deployment_zones = P2_GUNSLINGER_DEPLOYMENT_ZONES;
-   std::vector<std::pair<int, int>>::iterator p2_it;
-   p2_it = p1_pawn_deployment_zones.begin();
-   p2_it = p1_pawn_deployment_zones.insert(
-      p2_it,
-      {
-         std::make_pair(BOARD_COORD.first + 4, BOARD_COORD.second + 7),
-         std::make_pair(BOARD_COORD.first + 5, BOARD_COORD.second + 5),
-         std::make_pair(BOARD_COORD.first + 6, BOARD_COORD.second + 6),
-         std::make_pair(BOARD_COORD.first + 7, BOARD_COORD.second + 4)
-      }
-   );
+   // std::vector<std::pair<int, int>> p2_pawn_deployment_zones = P2_GUNSLINGER_DEPLOYMENT_ZONES;
+   // std::vector<std::pair<int, int>>::iterator p2_it;
+   // p2_it = p1_pawn_deployment_zones.begin();
+   // p2_it = p1_pawn_deployment_zones.insert(
+   //    p2_it,
+   //    {
+   //       std::make_pair(BOARD_COORD.first + 4, BOARD_COORD.second + 7),
+   //       std::make_pair(BOARD_COORD.first + 5, BOARD_COORD.second + 5),
+   //       std::make_pair(BOARD_COORD.first + 6, BOARD_COORD.second + 6),
+   //       std::make_pair(BOARD_COORD.first + 7, BOARD_COORD.second + 4)
+   //    }
+   // );
 
    // add pawns
    for (int i = 0; i < NUM_PAWNS; ++i)
@@ -312,7 +327,7 @@ void Game_c::initPieces()
       mPlayer2Pieces.push_back(
          std::make_shared<Piece_n::Piece_c>(
             Piece_n::PAWN,
-            P2_GUNSLINGER_DEPLOYMENT_ZONES,
+            p2_gunslinger_deployment_zones,
             reserve_position,
             Piece_n::PLAYER_TWO));
       reserve_position.second++;
@@ -328,7 +343,7 @@ void Game_c::initPieces()
       mPlayer2Pieces.push_back(
          std::make_shared<Piece_n::Piece_c>(
             Piece_n::GUN,
-            P2_GUNSLINGER_DEPLOYMENT_ZONES,
+            p2_gunslinger_deployment_zones,
             reserve_position,
             Piece_n::PLAYER_TWO));
       reserve_position.second++;
@@ -344,7 +359,7 @@ void Game_c::initPieces()
       mPlayer2Pieces.push_back(
          std::make_shared<Piece_n::Piece_c>(
             Piece_n::SLINGER,
-            P2_GUNSLINGER_DEPLOYMENT_ZONES,
+            p2_gunslinger_deployment_zones,
             reserve_position,
             Piece_n::PLAYER_TWO));
       reserve_position.second++;
@@ -356,8 +371,6 @@ void Game_c::initPieces()
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void Game_c::detectHit(Piece_n::Piece_c& piece, std::vector<PiecePtr>& pieces)
 {
-   std::cout << "Hit Detection" << std::endl;
-
    // true if the supplied piece is a slinger; triggers additional hit detections
    bool slinger_flag = false;
    if (piece.getPieceType() == Piece_n::SLINGER) { slinger_flag = true; }
@@ -582,8 +595,12 @@ void Game_c::detectHit(Piece_n::Piece_c& piece, std::vector<PiecePtr>& pieces)
 
 bool Game_c::gameOver()
 {
-   if (mBriefcasePosition == P1_SCORING_COORD ||
-       mBriefcasePosition == P2_SCORING_COORD)
+   // if (mBriefcasePosition == P1_SCORING_COORD ||
+   //     mBriefcasePosition == P2_SCORING_COORD)
+   if ((mBriefcasePosition.first == P1_SCORING_COORD.first &&
+        mBriefcasePosition.second == P1_SCORING_COORD.second) ||
+       (mBriefcasePosition.first == P1_SCORING_COORD.first &&
+        mBriefcasePosition.second == P1_SCORING_COORD.second))
    {
       return true;
    }

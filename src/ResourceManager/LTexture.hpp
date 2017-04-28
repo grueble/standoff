@@ -12,7 +12,7 @@ public:
 
    ~LTexture();
 
-   bool loadFromFile(SDL_Renderer* renderer, const std::string& img_path);
+   bool loadFromFile(SDL_Renderer* renderer, std::string img_path);
 
    void free();
 
@@ -21,7 +21,7 @@ public:
                SDL_Rect* clip = NULL, 
                double degrees = 0);
 private:
-   SDL_Texture* mTexture = NULL;
+   SDL_Texture* mTexture;
 };
 
 #endif

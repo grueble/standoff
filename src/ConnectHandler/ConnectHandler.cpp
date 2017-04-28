@@ -3,7 +3,7 @@
 
 using namespace ConnectHandler_n;
 
-const int ConnectHandler_c::SERVER_PORT = 27270;\
+const int ConnectHandler_c::SERVER_PORT = 27270;
 const int ConnectHandler_c::PROTOCOL_ID = 0x99887766;
 const int ConnectHandler_c::HEADER_SIZE = 4;
 

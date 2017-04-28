@@ -48,7 +48,7 @@ namespace Piece_n
       // - Piecetype_e& the type of Piece to create
       // - std::vector<std::pair<int, int>>& a list of valid deployments for this Piece
       Piece_c(const PieceType_e& piece_type,
-              const std::vector<std::pair<int, int> >& deployment_zones,
+              const std::vector<std::pair<int, int> > deployment_zones,
               const std::pair<int, int> reserve_position,
               const Team_e& team);
 

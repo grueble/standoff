@@ -3,12 +3,34 @@
 
 using namespace ResourceManager_n;
 
+// int main(int argc, char* argv[])
+// {
+//    ResourceManager_n::ResourceManager_c resource_manager;
+
+//    if (!resource_manager.init())
+//    {
+//       printf("Failed to initialize application!\n");
+//    }
+//    else
+//    {
+//       if (!resource_manager.loadMedia())
+//       {
+//          printf("Failed to load media!\n");
+//       }
+//    }
+
+//    resource_manager.close();
+
+//    return 0;
+// }
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // - Constructor and Destructor
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ResourceManager_c::ResourceManager_c()
 {
-
+   gWindow = NULL;
+   gRenderer = NULL;
 }
 
 ResourceManager_c::~ResourceManager_c()
@@ -38,8 +60,12 @@ bool ResourceManager_c::init()
       }
 
       // create window
-      gWindow = SDL_CreateWindow("Standoff", SDL_WINDOWPOS_UNDEFINED, 
-                                 SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);     
+      gWindow = SDL_CreateWindow("Standoff", 
+                                 SDL_WINDOWPOS_UNDEFINED, 
+                                 SDL_WINDOWPOS_UNDEFINED, 
+                                 SCREEN_WIDTH, 
+                                 SCREEN_HEIGHT, 
+                                 SDL_WINDOW_SHOWN);     
       if (gWindow == NULL)
       {
          printf("Window could not be created! SDL_Error: %s\n", SDL_GetError());
@@ -77,13 +103,13 @@ bool ResourceManager_c::loadMedia()
 {
    bool success = true;
    
-   if (!gBoardTexture.loadFromFile(gRenderer, PATH_TO_ASSETS + "board.png"))
+   if (!gBoardTexture.loadFromFile(gRenderer, "../assets/board.png"))
    {
       printf("Failed to load Board texture image!\n");
       success = false;
    }
    
-   if (!gSpritesheetTexture.loadFromFile(gRenderer, PATH_TO_ASSETS + "spritesheet.png"))
+   if (!gSpritesheetTexture.loadFromFile(gRenderer, "../assets/spritesheet.png"))
    {
       printf("Failed to load Spritesheet texture image!\n");
       success = false;
@@ -98,9 +124,6 @@ bool ResourceManager_c::loadMedia()
 
 void ResourceManager_c::close()
 {
-   gBoardTexture.free();
-   gSpritesheetTexture.free();
-
    // destroy renderer
    SDL_DestroyRenderer(gRenderer);
    gRenderer = NULL;
@@ -114,9 +137,6 @@ void ResourceManager_c::close()
    SDL_Quit();
 }
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// - getRenderer
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 SDL_Renderer* ResourceManager_c::getRenderer()
 {
    return gRenderer;
@@ -138,12 +158,6 @@ void ResourceManager_c::renderSpriteAt(Sprite_e sprite_id,
          TILE_WIDTH, 
          TILE_WIDTH
       };
-   
-      /*SpriteMap::iterator sprite_it = mSpriteMap.find(sprite);
-      if (sprite_it != mSpriteMap.end())
-      {
-         gSpritesheetTexture.render(gRenderer, &dest_rect, &sprite_it->second, degrees);
-      }*/
 
       std::vector<Sprite_s>::iterator it;
       for (it = mSprites.begin(); it != mSprites.end(); ++it)
@@ -176,9 +190,6 @@ void ResourceManager_c::createSpriteMap()
 
    for (int sprite_int = P2_PAWN; sprite_int != P2_MANHOLE_TILE; ++sprite_int)
    {
-      /*std::pair<Sprite_e, SDL_Rect> sprite = std::pair<Sprite_e, SDL_Rect>(static_cast<Sprite_e>(sprite_int), clip);
-      mSpriteMap.insert(sprite);*/
-
       mSprites.push_back(Sprite_s(static_cast<Sprite_e>(sprite_int), clip));
 
       if (clip.x < TILE_WIDTH * 8) // spritesheet.png contains 8 sprites/row

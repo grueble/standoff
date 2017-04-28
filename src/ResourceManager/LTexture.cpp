@@ -3,16 +3,18 @@
 
 LTexture::LTexture()
 {
-
+   mTexture = NULL;
 }
 
 LTexture::~LTexture()
 {
+   // deallocate
    free();
 }
 
-bool LTexture::loadFromFile(SDL_Renderer* renderer, const std::string& img_path)
+bool LTexture::loadFromFile(SDL_Renderer* renderer, std::string img_path)
 {
+   // get rid of any pre-existing texture
    free();
 
    bool success = true;

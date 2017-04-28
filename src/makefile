@@ -1,5 +1,5 @@
 # the type of compiler to use
-CC=g++ -ID:/dev/vs_dev_lib/include -LD:/dev/vs_dev_lib/lib/x86
+CC=g++ -ID:/dev/vs_dev_lib/include -LD:/dev/vs_dev_lib/lib/x86 -g -ggdb3
 
 # the flags to pass to the compiler
 CFLAGS=-std=c++14 -c -Wall -w
@@ -22,6 +22,7 @@ GAME_DIR=Game
 CORE_SUBDIRS=$(NET_DIR) $(GAME_DIR)
 CLIENT_SUBDIRS=$(CLIENT_DIR) $(SDLF_DIR) $(CORE_SUBDIRS)
 SERVER_SUBDIRS=$(SERVER_DIR) $(CORE_SUBDIRS)
+CLEAN_SUBDIRS=$(CLIENT_SUBDIRS) $(SERVER_DIR)
 
 # pattern match for source code files
 CLIENT_SRCS=$(foreach dir,$(CLIENT_SUBDIRS),$(wildcard $(dir)/*.cpp))
@@ -30,6 +31,14 @@ SERVER_SRCS=$(foreach dir,$(SERVER_SUBDIRS),$(wildcard $(dir)/*.cpp))
 # pattern match search for built objects
 CLIENT_OBJS=$(CLIENT_SRCS:.cpp=.o)
 SERVER_OBJS=$(SERVER_SRCS:.cpp=.o)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# APP_OBJS=$(CLIENT_DIR)/StandoffApp.o \
+# 			$(SDLF_DIR)/LTexture.o $(SDLF_DIR)/ResourceManager.o \
+# 			$(NET_DIR)/Address.o $(NET_DIR)/ConnectHandler.o $(NET_DIR)/LSocket.o \
+# 			$(GAME_DIR)/Game.o $(GAME_DIR)/Piece.o
+# G_OBJS=$(SDLF_DIR)/LTexture.o $(SDLF_DIR)/ResourceManager.o
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # source paths used to build specific objects
 CLIENT=StandoffClient/StandoffClient.cpp
@@ -61,7 +70,15 @@ $(BUILD_DIR)/client: $(CLIENT_OBJS)
 	$(CC) $(LFLAGS) -o $@ $(CLIENT_OBJS) $(LIBS)
 
 $(BUILD_DIR)/server: $(SERVER_OBJS)
-	$(CC) $(LFLAGS) -o $@ $(SERVER_OBJS)  $(LIBS)
+	$(CC) $(LFLAGS) -o $@ $(SERVER_OBJS) $(LIBS)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# $(BUILD_DIR)/app: $(APP_OBJS)
+# 	$(CC) $(LFLAGS) -o $@ $(APP_OBJS) $(LIBS)
+
+# $(BUILD_DIR)/g: $(G_OBJS)
+# 	$(CC) $(LFLAGS) -o $@ $(G_OBJS) $(LIBS)
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 $(CLIENT_DIR)/StandoffClient.o: $(CLIENT) $(CLIENTH) $(APPH) $(NETH)
 	$(CC) $(CFLAGS) $< -o $@
@@ -94,4 +111,8 @@ $(GAME_DIR)/Piece.o: $(PIECE) $(PIECEH)
 	$(CC) $(CFLAGS) $< -o $@
 
 clean:
-	rm -rf *.o $(BUILD_DIR)/client $(BUILD_DIR)/server
+	for i in $(CLEAN_SUBDIRS); do \
+		rm $$i/*.o; \
+	done
+
+	rm $(BUILD_DIR)/client $(BUILD_DIR)/server

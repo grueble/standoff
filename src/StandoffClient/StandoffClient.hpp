@@ -1,6 +1,5 @@
 #ifndef _STANDOFF_CLIENT_HPP_
 #define _STANDOFF_CLIENT_HPP_
-
 #include "../ConnectHandler/ConnectHandler.hpp"
 #include "StandoffApp.hpp"
 
@@ -21,6 +20,7 @@ namespace StandoffClient_n
       int run();
 
 private:
+      // launches the Standoff
       void playApp(StandoffApp_n::Mode_e mode);
 
       // handles message transmission between client and server

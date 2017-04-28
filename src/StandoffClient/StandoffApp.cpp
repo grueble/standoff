@@ -3,6 +3,37 @@
 
 using namespace StandoffApp_n;
 
+// int main(int argc, char* argv[])
+// {
+//    ConnectHandler_n::ConnectHandler_c connect_handler;
+//    ResourceManager_n::ResourceManager_c resource_manager;
+//    ConnectHandler_n::Address_c server_address(127,0,0,1,ConnectHandler_n::ConnectHandler_c::SERVER_PORT);
+
+//    if (!resource_manager.init())
+//    {
+//       printf("Failed to initialize application!\n");
+//    }
+//    else
+//    {
+//       if (!resource_manager.loadMedia())
+//       {
+//          printf("Failed to load media!\n");
+//       }
+//       else 
+//       {
+//          StandoffApp_n::StandoffApp_c standoff_app(resource_manager, 
+//                                                    connect_handler,
+//                                                    server_address,
+//                                                    resource_manager.getRenderer(),
+//                                                    LOCAL);
+//          int exit_reason = standoff_app.run();
+
+//          printf("Exited with code %d !", exit_reason);
+//       }
+//    }
+//    resource_manager.close();
+// }
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // - Constructor and Destructor
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -15,10 +46,9 @@ StandoffApp_c::StandoffApp_c(ResourceManager_n::ResourceManager_c& resource_mana
    mConnectHandler(connect_handler),
    mServerAddress(server_address),
    gRenderer(renderer),
-   mCurrentGame(),
    mMode(mode)
 {
-
+   // gRenderer = renderer;
 }
 
 StandoffApp_c::~StandoffApp_c()
@@ -81,7 +111,7 @@ int StandoffApp_c::run()
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void StandoffApp_c::handleLmbDown(const SDL_Event& e)
 {
-   if (mCurrentGame.getCurrentMove().mCurrentAction == Game_n::NONE) // !mCurrentGame.moved() && !mCurrentGame.deployed())
+   if (mCurrentGame.getCurrentMove().mCurrentAction == Game_n::NONE)
    {
       /*
        * transform the mouse click event's coordinate in pixels into a
@@ -114,7 +144,6 @@ void StandoffApp_c::handleLmbDown(const SDL_Event& e)
        */
       if (!piece_hit_flag && mCurrentGame.getCurrentPiece() != nullptr)
       {
-         std::cout << "MOVING" << std::endl;
          mCurrentGame.move(screen_tile_coord);
       }
    }
@@ -122,8 +151,6 @@ void StandoffApp_c::handleLmbDown(const SDL_Event& e)
 
 void StandoffApp_c::handleKeyDown(const SDL_Event& e)
 {
-   std::cout << "Key Input w/" << mCurrentGame.getCurrentMove().mCurrentAction  << std::endl;
-
    switch(e.key.keysym.sym)
    {
       case SDLK_RETURN :
@@ -146,12 +173,9 @@ void StandoffApp_c::handleKeyDown(const SDL_Event& e)
             // and neither player has just won the game...
             if (!mCurrentGame.gameOver())
             {
-               std::cout << "PASSING TURN w/" << mCurrentGame.getCurrentMove().mCurrentAction << std::endl;
-
                // resolve a shootout if one has been called
                if (mCurrentGame.getCurrentMove().mCurrentAction == Game_n::SHOOTOUT)
                {
-                  std::cout << "SHOOT" << std::endl;
                   mCurrentGame.shootout();
                }
 
@@ -180,7 +204,6 @@ void StandoffApp_c::handleKeyDown(const SDL_Event& e)
          // if the current player hasn't performed any actions this turn
          if (mCurrentGame.getCurrentMove().mCurrentAction == Game_n::NONE)
          {
-            std::cout << "SHOOTOUT FLAG SET" << std::endl;
             mCurrentGame.getCurrentMove().mCurrentAction = Game_n::SHOOTOUT;
          }
          break;
@@ -315,6 +338,10 @@ void StandoffApp_c::draw()
                ResourceManager_n::P2_SLINGER, (*p2_it)->getPosition(), piece_direction); 
             break;
          }
+         default :
+         {
+            break;
+         }
       }
    }
 
@@ -385,7 +412,9 @@ const std::vector<Game_n::PiecePtr>& StandoffApp_c::getMyPieces()
    {
       case LOCAL :
       {
-         return (mCurrentGame.mCurrentTurn % 2) ? mCurrentGame.getPlayer1Pieces() : mCurrentGame.getPlayer2Pieces();
+         return (mCurrentGame.mCurrentTurn % 2)
+                ? mCurrentGame.getPlayer1Pieces()
+                : mCurrentGame.getPlayer2Pieces();
       }
       case PLAYER_ONE :
       {

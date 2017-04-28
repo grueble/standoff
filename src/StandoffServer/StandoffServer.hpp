@@ -27,6 +27,7 @@ namespace StandoffServer_n
       std::string mName;
    };
 
+   // wrap Game_s to allow for automatic deletion
    typedef std::unique_ptr<Game_s> GamePtr;
 
    class StandoffServer_c

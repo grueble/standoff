@@ -1,8 +1,8 @@
 #ifndef _STANDOFF_APP_HPP_
 #define _STANDOFF_APP_HPP_
 
-#include "../Game/Game.hpp"
 #include "../ConnectHandler/ConnectHandler.hpp"
+#include "../Game/Game.hpp"
 #include "../ResourceManager/ResourceManager.hpp"
 
 namespace StandoffApp_n
@@ -56,7 +56,7 @@ namespace StandoffApp_n
       ConnectHandler_n::Address_c& mServerAddress;
 
       // the ResourceManager's window renderer
-      SDL_Renderer* gRenderer = NULL;
+      SDL_Renderer* gRenderer;
 
       // the current game instance
       Game_n::Game_c mCurrentGame;

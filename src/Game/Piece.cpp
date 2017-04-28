@@ -1,11 +1,11 @@
-#include <cmath>
-
 #include "Piece.hpp"
+#include <cmath>
+#include <iostream>
 
 using namespace Piece_n;
 
 Piece_c::Piece_c(const PieceType_e& piece_type, 
-                 const std::vector<std::pair<int,int>>& deployment_zones,
+                 const std::vector<std::pair<int,int>> deployment_zones,
                  const std::pair<int, int> reserve_position,
                  const Team_e& team) :
    mPieceType(piece_type),
@@ -15,7 +15,8 @@ Piece_c::Piece_c(const PieceType_e& piece_type,
    mPlayState(PlayState_e::RESERVE),
    mTeam(team)
 {
-   
+   // printf("mD=%d", deployment_zones.size());
+   // mDeploymentZones = deployment_zones;
 }
 
 Piece_c::~Piece_c()
@@ -34,12 +35,14 @@ const std::pair<int, int>& Piece_c::getPosition()
 
 void Piece_c::setPosition(const std::pair<int, int>& new_position)
 {
+   // printf("SET_POS\n");
    switch (mPlayState)
    {
       case RESERVE :
       {
          if (this->isValidDeployment(new_position))
          {
+            // printf("VALID\n");
             mPosition = new_position;
             this->setPlayState(LIVE);
          }
@@ -122,11 +125,14 @@ const Team_e& Piece_c::getTeam() const
 
 bool Piece_c::isValidDeployment(const std::pair<int, int>& deploy_position)
 {
+   // printf("TRY: { %d, %d } w/ l=%d\n", deploy_position.first, deploy_position.second, mDeploymentZones.size());
    std::vector<std::pair<int, int>>::iterator it;
    for (it = mDeploymentZones.begin(); it != mDeploymentZones.end(); ++it)
    {
+      // printf("{ %d, %d }", it->first, it->second);
       if (deploy_position == *it)
       {
+         // printf("\n");
          return true;
       }
    }

@@ -1,28 +1,19 @@
 #ifndef _RESOURCE_MANAGER_HPP_
 #define _RESOURCE_MANAGER_HPP_
 
-#include <SDL.h>
-#include <SDL_image.h>
+// #include <SDL.h>
+// #include <SDL_image.h>
+
 #include <stdio.h>
 #include <vector>
 #include <string>
-// #include <unordered_map>
 #include "LTexture.hpp"
-
-// make sure to include the correct .dll in the running directory for the executable
 
 namespace ResourceManager_n
 {
    // the width of (both) the border tiles (and the margin)
    static const int TILE_WIDTH = 60; 
    static const int BORDER_WIDTH = 20;
-
-   // paths to game assets
-   static const std::string PATH_TO_ASSETS = "d:/dev/projects/Standoff/assets/";
-   static const std::vector<std::string> IMG_PATHS =
-   {
-      "board.png", "spritesheet.png" // "tiles.png", "pieces.png", "special.png"
-   };
 
    // screen dimension constants
    static const int SCREEN_WIDTH = ResourceManager_n::TILE_WIDTH * 19;
@@ -70,68 +61,36 @@ namespace ResourceManager_n
       // default destructor
       ~ResourceManager_c();
 
-      // \Name: init
-      // \Description:
-      // - initializes the StandoffApp's SDL2 functionality
-      // \Argument:
-      // - none
-      // \Returns
-      // - bool, success of failure
+      // initializes the SDL2 functionality
       bool init();
 
-      // \Name: loadMedia
-      // \Description:
-      // - loads all required media to memory
-      // \Argument:
-      // - none
-      // \Returns
-      // - bool, success or failure
+      // loads all required media to memory
       bool loadMedia();
 
-      // \Name: close
-      // \Description:
-      // - closes the Standoff (client) Application
-      // \Argument:
-      // - none
-      // \Returns
-      // - none
+      // unloads all SDL2 functionality
       void close();
 
-      // \Name: getRenderer
-      // \Description:
-      // - gets the ResourceManager's gRenderer
-      // \Argument:
-      // - none
-      // \Returns
-      // - SDL_Renderer*, pointer to the renderer
+      // getter for the SDL_Renderer member
       SDL_Renderer* getRenderer();
 
-      // \Name: renderSpriteAt
-      // \Description:
-      // - returns a texture based on the passed value
-      // \Argument:
-      // - Sprite_e, the type of image to return
-      // \Returns
-      // - SDL_Texture*, pointer to the requested texture
+      // renders the appropriate sprite at the designated screen tile position
       void renderSpriteAt(
          Sprite_e sprite_id, const std::pair<int, int>& screen_tile_coord, double degrees = 0);
 
    protected:
+      // create a map of sprites and their associated render data
+      // - uses Sprite_e value as the key 
       void createSpriteMap();
 
       // the window to render to
-      SDL_Window* gWindow = NULL;
+      SDL_Window* gWindow;
 
       // the window renderer
-      SDL_Renderer* gRenderer = NULL;
+      SDL_Renderer* gRenderer;
 
       // storage for necessary textures
       LTexture gBoardTexture;
       LTexture gSpritesheetTexture;
-
-      // mapping of sprite type to spritesheet clip
-      // typedef std::unordered_map<Sprite_e, SDL_Rect> SpriteMap;
-      // SpriteMap mSpriteMap;
 
       std::vector<Sprite_s> mSprites;
    };
