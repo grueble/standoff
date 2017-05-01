@@ -42,14 +42,15 @@ int StandoffServer_c::run()
    
    int game_count = 0;
    bool send_flag = false;
-   ConnectHandler_n::Address_c from_address = ConnectHandler_n::Address_c();
-   ConnectHandler_n::Address_c to_address = ConnectHandler_n::Address_c();
-   unsigned char data[ConnectHandler_n::MAX_PACKET_SIZE];
+   ConnectHandler_n::Address_c from_address;
+   ConnectHandler_n::Address_c to_address;
+   unsigned char data[ConnectHandler_n::MAX_PACKET_SIZE] = {0};
 
    while (true) // listen until cancelled by ctrl^C
    {
       if (mConnectHandler.receiveData(from_address, data) > 0)
       {
+         printf("Message received w/ ReqID=%d...\n", data[0]);
          switch(static_cast<ConnectHandler_n::Request_e>(data[0])) // skip the cast for perf. improvements
          {
             case ConnectHandler_n::CREATE_GAME :
@@ -174,7 +175,7 @@ int StandoffServer_c::run()
             }
             default : // ConnectHandler_n::INVALID
             {
-               printf("Received invalid request ");
+               printf("Received invalid request!\n");
                break;
             }
          }

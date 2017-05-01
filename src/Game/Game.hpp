@@ -7,6 +7,7 @@
 
 namespace Game_n
 {
+   // defines a smart pointer wrapper for the piece class
    typedef std::shared_ptr<Piece_n::Piece_c> PiecePtr;
 
    // the board's upper left hand corner in "screen tile" coordinates
@@ -43,8 +44,6 @@ namespace Game_n
    class Game_c
    {
    public:
-
-
       // constructor
       Game_c();
 

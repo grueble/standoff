@@ -45,7 +45,6 @@ bool ConnectHandler_c::start(int port)
    {
       return false;
    }
-   // printf("Starting connection on port %d\n", port);
    mIsRunning = true;
    return true;
 }
@@ -69,11 +68,20 @@ bool ConnectHandler_c::sendData(Address_c& to_address, unsigned char data[])
    {
       return false;
    }
+
+   printf("Sending to %d.%d.%d.%d:%d\n", 
+            to_address.getA(), to_address.getB(), 
+            to_address.getC(), to_address.getD(), 
+            to_address.getPort());
+
    unsigned char* packet = new unsigned char[MAX_PACKET_SIZE + HEADER_SIZE];
    packet[0] = (unsigned char)(mProtocolId >> 24);
    packet[1] = (unsigned char)((mProtocolId >> 16) & 0xFF);
    packet[2] = (unsigned char)((mProtocolId >> 8) & 0xFF);
    packet[3] = (unsigned char)((mProtocolId) & 0xFF);
+
+   // printf("%d, %d, %d, %d\n", packet[0], packet[1], packet[2], packet[3]);
+
    std::memcpy(&packet[HEADER_SIZE], data, MAX_PACKET_SIZE);
    bool ret_val = 
       mSocket.send(to_address, packet, MAX_PACKET_SIZE + HEADER_SIZE);
@@ -89,6 +97,11 @@ int ConnectHandler_c::receiveData(Address_c& from_address, unsigned char data[])
    int bytes_read = 
       mSocket.receive(from_address, packet, MAX_PACKET_SIZE + HEADER_SIZE);
 
+   if (bytes_read > 0)
+   {
+      printf("%d bytes read...\n", bytes_read);
+   }
+
    // determine if the message is valid
    if (bytes_read == 0)
    {
@@ -100,14 +113,23 @@ int ConnectHandler_c::receiveData(Address_c& from_address, unsigned char data[])
       delete [] packet;
       return 0;
    }
-   if (data[0] != (unsigned char)(mProtocolId >> 24) || 
-       data[1] != (unsigned char)((mProtocolId >> 16) & 0xFF) ||
-       data[2] != (unsigned char)((mProtocolId >> 8) & 0xFF) ||
-       data[3] != (unsigned char)(mProtocolId & 0xFF))
+
+   // printf("%d, %d, %d, %d\n", packet[0], packet[1], packet[2], packet[3]);
+
+   if (packet[0] != (unsigned char)(mProtocolId >> 24) || 
+       packet[1] != (unsigned char)((mProtocolId >> 16) & 0xFF) ||
+       packet[2] != (unsigned char)((mProtocolId >> 8) & 0xFF) ||
+       packet[3] != (unsigned char)(mProtocolId & 0xFF))
    {
+      printf("FUCK");
       delete [] packet;
       return 0;
    }
+
+   printf("Receiving from %d.%d.%d.%d:%d\n", 
+            from_address.getA(), from_address.getB(), 
+            from_address.getC(), from_address.getD(), 
+            from_address.getPort());
 
    std::memcpy(data, &packet[HEADER_SIZE], MAX_PACKET_SIZE);
    delete [] packet;

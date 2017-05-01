@@ -53,6 +53,12 @@ int StandoffClient_c::run()
    getline(std::cin, input);
    mConnectHandler.start(std::stoi(input)); 
 
+   // while (true)
+   // {
+   //    data[0] = 6;
+   //    mConnectHandler.sendData(mServerAddress, data);
+   // }
+
    while (!(input.at(0) == 'Q' || input.at(0) == 'q'))
    { 
       std::cout << "(C)reate a new game" << std::endl;
@@ -78,8 +84,8 @@ int StandoffClient_c::run()
                   playApp(StandoffApp_n::LOCAL);
                   break;
                }
-               case 'M' :
-               case 'm' :
+               case 'N' :
+               case 'n' :
                {
                   data[0] = 0x01; // ConnectHandler_n::CREATE_GAME 
                   if (!mConnectHandler.sendData(mServerAddress, data))

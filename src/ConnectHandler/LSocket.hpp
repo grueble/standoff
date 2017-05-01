@@ -80,6 +80,7 @@ namespace ConnectHandler_n
       int receive(Address_c& sender, void* data, int size);
    private:
       Socket_t mSocket;
+      // int mSocket;
    };
 }
 
