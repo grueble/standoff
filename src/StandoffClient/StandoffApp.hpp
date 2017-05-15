@@ -37,11 +37,14 @@ namespace StandoffApp_n
       // performs a draw action 
       void draw();
 
-      // sends a game action to the server
+      // formats and sends an action message to the game server
       bool update();
 
+      // receives and translates action messages from the game server
+      void listen();
+
       // gets the container of currently accessible pieces
-      const std::vector<Game_n::PiecePtr>& getMyPieces();
+      // const std::vector<Game_n::PiecePtr>& getMyPieces();
 
       // only called in networked games, true if the current app has the turn priority
       bool myTurn();

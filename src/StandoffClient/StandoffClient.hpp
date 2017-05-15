@@ -2,6 +2,7 @@
 #define _STANDOFF_CLIENT_HPP_
 #include "../ConnectHandler/ConnectHandler.hpp"
 #include "StandoffApp.hpp"
+#include <cstdio>
 
 const int SERVER_PORT = 27270;
 const int GAME_NAME_LENGTH_MAX = 32;
@@ -22,6 +23,9 @@ namespace StandoffClient_n
 private:
       // launches the Standoff
       void playApp(StandoffApp_n::Mode_e mode);
+
+      // prints a line break to the console (formatting)
+      void printBreak() { printf("\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n"); }
 
       // handles message transmission between client and server
       ConnectHandler_n::ConnectHandler_c& mConnectHandler;

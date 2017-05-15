@@ -595,8 +595,6 @@ void Game_c::detectHit(Piece_n::Piece_c& piece, std::vector<PiecePtr>& pieces)
 
 bool Game_c::gameOver()
 {
-   // if (mBriefcasePosition == P1_SCORING_COORD ||
-   //     mBriefcasePosition == P2_SCORING_COORD)
    if ((mBriefcasePosition.first == P1_SCORING_COORD.first &&
         mBriefcasePosition.second == P1_SCORING_COORD.second) ||
        (mBriefcasePosition.first == P1_SCORING_COORD.first &&

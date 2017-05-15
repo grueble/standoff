@@ -3,37 +3,6 @@
 
 using namespace StandoffApp_n;
 
-// int main(int argc, char* argv[])
-// {
-//    ConnectHandler_n::ConnectHandler_c connect_handler;
-//    ResourceManager_n::ResourceManager_c resource_manager;
-//    ConnectHandler_n::Address_c server_address(127,0,0,1,ConnectHandler_n::ConnectHandler_c::SERVER_PORT);
-
-//    if (!resource_manager.init())
-//    {
-//       printf("Failed to initialize application!\n");
-//    }
-//    else
-//    {
-//       if (!resource_manager.loadMedia())
-//       {
-//          printf("Failed to load media!\n");
-//       }
-//       else 
-//       {
-//          StandoffApp_n::StandoffApp_c standoff_app(resource_manager, 
-//                                                    connect_handler,
-//                                                    server_address,
-//                                                    resource_manager.getRenderer(),
-//                                                    LOCAL);
-//          int exit_reason = standoff_app.run();
-
-//          printf("Exited with code %d !", exit_reason);
-//       }
-//    }
-//    resource_manager.close();
-// }
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // - Constructor and Destructor
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -67,12 +36,23 @@ int StandoffApp_c::run()
    // event handler
    SDL_Event e;
 
+   // initial rendering of the scene
+   draw();
+
    // main loop
    while (!quit)
    {
-      // event handling
-      while (SDL_PollEvent(&e) != 0)
+      // synchronize with game server
+      if (!myTurn())
       {
+         draw();
+         listen();
+      }
+
+      // event handling
+      while (SDL_PollEvent(&e) != 0 && myTurn())
+      {
+         // re-draw the scene w/ every event handling loop
          draw();
 
          switch (e.type)
@@ -127,7 +107,9 @@ void StandoffApp_c::handleLmbDown(const SDL_Event& e)
        * or in play) to determine if the mouse click event selects a piece
        */
       bool piece_hit_flag = false;
-      const std::vector<Game_n::PiecePtr>& pieces = getMyPieces();
+      const std::vector<Game_n::PiecePtr>& pieces = (mCurrentGame.mCurrentTurn % 2)
+                                                    ? mCurrentGame.getPlayer1Pieces()
+                                                    : mCurrentGame.getPlayer2Pieces();
       std::vector<Game_n::PiecePtr>::const_iterator it;
       for (it = pieces.begin(); it != pieces.end(); ++it)
       {
@@ -184,18 +166,13 @@ void StandoffApp_c::handleKeyDown(const SDL_Event& e)
             }
             else // o/w end the game
             {
-
+               // this will probably end up being a banner pop-up
             }
          }
          break;
       }
       case SDLK_BACKSPACE :
       {
-         // if the current player has moved...
-         /*if (mCurrentGame.getCurrentMove().mCurrentAction != Game_n::NONE)
-         {
-            mCurrentGame.revertMove();
-         }*/
          mCurrentGame.revertMove();
          break;
       }
@@ -406,31 +383,78 @@ bool StandoffApp_c::update()
    return ret_val;
 }
 
-const std::vector<Game_n::PiecePtr>& StandoffApp_c::getMyPieces()
+void StandoffApp_c::listen()
 {
-   switch (mMode)
+   bool receive_complete = false;
+   unsigned char data[ConnectHandler_n::MAX_PACKET_SIZE] = {0};
+
+   while (!receive_complete)
    {
-      case LOCAL :
+      if (mConnectHandler.receiveData(mServerAddress, data) > 0)
       {
-         return (mCurrentGame.mCurrentTurn % 2)
-                ? mCurrentGame.getPlayer1Pieces()
-                : mCurrentGame.getPlayer2Pieces();
-      }
-      case PLAYER_ONE :
-      {
-         return mCurrentGame.getPlayer1Pieces();
-      }
-      case PLAYER_TWO :
-      {
-         return mCurrentGame.getPlayer2Pieces();
-      }
-      default :
-      {
-         // should never hit this case, mMode is instantiated at construction
-         break;
+         receive_complete = true;
+         switch(static_cast<ConnectHandler_n::Request_e>(data[0]))
+         {
+            case ConnectHandler_n::MOVE_ACTION :
+            {
+               std::pair<int, int> start_position = std::make_pair((int)data[1], (int)data[2]);
+               const std::vector<Game_n::PiecePtr>& pieces = (mCurrentGame.mCurrentTurn % 2)
+                                                             ? mCurrentGame.getPlayer1Pieces()
+                                                             : mCurrentGame.getPlayer2Pieces();
+               std::vector<Game_n::PiecePtr>::const_iterator it;
+               for (it = pieces.begin(); it != pieces.end(); ++it)
+               {
+                  if ((*it)->getPosition() == start_position && (*it)->getPlayState() != Piece_n::DEAD)
+                  {
+                     mCurrentGame.setCurrentPiece(*it);
+                     mCurrentGame.move(std::make_pair((int)data[3], (int)data[4]));
+                     mCurrentGame.rotate(static_cast<Piece_n::Direction_e>(data[5]));
+                     mCurrentGame.nextPlayer();
+                  }
+               }
+               break;
+            }
+            case ConnectHandler_n::SHOOTOUT :
+            {
+               mCurrentGame.shootout();
+               mCurrentGame.nextPlayer();
+               break;
+            } 
+            default :
+            {
+               printf("No rule to handle received Action_e!");
+               break;
+            }
+         }
       }
    }
 }
+
+// const std::vector<Game_n::PiecePtr>& StandoffApp_c::getMyPieces()
+// {
+//    switch (mMode)
+//    {
+//       case LOCAL :
+//       {
+//          return (mCurrentGame.mCurrentTurn % 2)
+//                 ? mCurrentGame.getPlayer1Pieces()
+//                 : mCurrentGame.getPlayer2Pieces();
+//       }
+//       case PLAYER_ONE :
+//       {
+//          return mCurrentGame.getPlayer1Pieces();
+//       }
+//       case PLAYER_TWO :
+//       {
+//          return mCurrentGame.getPlayer2Pieces();
+//       }
+//       default :
+//       {
+//          // should never hit this case, mMode is instantiated at construction
+//          break;
+//       }
+//    }
+// }
 
 bool StandoffApp_c::myTurn()
 {
@@ -450,6 +474,7 @@ bool StandoffApp_c::myTurn()
       }
       default :
       {
+         // should never hit this case, mMode is instantiated at construction
          return false;
       }
    }

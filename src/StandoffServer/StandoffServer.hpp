@@ -9,12 +9,26 @@ namespace StandoffServer_n
 {
    struct Game_s
    {
-      Game_s(int game_id, ConnectHandler_n::Address_c p1_addr) :
+      // Game_s(int game_id, 
+      //        ConnectHandler_n::Address_c p1_addr) :
+      //    mGameId(game_id),
+      //    mP1Addr(p1_addr),
+      //    mP2Addr(),
+      //    mGame(),
+      //    mIsOpen(true)
+      // {
+         
+      // }
+
+      Game_s(int game_id, 
+             ConnectHandler_n::Address_c p1_addr, 
+             std::string name) :
          mGameId(game_id),
          mP1Addr(p1_addr),
          mP2Addr(),
          mGame(),
-         mIsOpen(true)
+         mIsOpen(true), 
+         mName(name)
       {
          
       }

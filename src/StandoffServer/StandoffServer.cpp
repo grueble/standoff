@@ -23,7 +23,7 @@ StandoffServer_c::StandoffServer_c(ConnectHandler_n::ConnectHandler_c& connect_h
 
 StandoffServer_c::~StandoffServer_c()
 {
-   // delete games and players
+
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -58,7 +58,25 @@ int StandoffServer_c::run()
                if (game_count < MAX_NUM_GAMES)
                {
                   game_count++; 
-                  mGames.push_back(std::make_unique<Game_s>(game_count, from_address));
+                  if (data[1] == 0x01)
+                  {
+                     // indicates that the request includes a name for the created game
+                     std::string name = "";
+                     for (int i = 0; i < (int)data[2]; ++i)
+                     {
+                        std::string tmp(1, data[3 + i]);
+                        name = name + tmp;
+                     }
+                     mGames.push_back(
+                        std::make_unique<Game_s>(game_count, from_address, name));
+                  }
+                  else
+                  {
+                     std::string default_name = "game" + std::to_string(game_count);
+                     mGames.push_back(
+                        std::make_unique<Game_s>(game_count, from_address, default_name));
+                  }
+                  printf("Total Active Games: %d", game_count);
                }
                else 
                {
@@ -68,6 +86,7 @@ int StandoffServer_c::run()
             }
             case ConnectHandler_n::FIND_GAMES :
             {
+               printf("%d open games...\n", game_count);
                findGames(from_address);
                break;
             }
@@ -96,7 +115,8 @@ int StandoffServer_c::run()
                {
                   if ((*it)->mP1Addr == from_address)
                   {
-                     const std::vector<Game_n::PiecePtr>& p1_pieces = (*it)->mGame.getPlayer1Pieces();
+                     const std::vector<Game_n::PiecePtr>& p1_pieces = 
+                        (*it)->mGame.getPlayer1Pieces();
                      std::vector<Game_n::PiecePtr>::const_iterator p1_it;
                      for (p1_it = p1_pieces.begin(); p1_it != p1_pieces.end(); ++p1_it)
                      {
@@ -122,7 +142,8 @@ int StandoffServer_c::run()
                   }
                   else if ((*it)->mP2Addr == from_address)
                   {
-                     const std::vector<Game_n::PiecePtr>& p2_pieces = (*it)->mGame.getPlayer2Pieces();
+                     const std::vector<Game_n::PiecePtr>& p2_pieces = 
+                        (*it)->mGame.getPlayer2Pieces();
                      std::vector<Game_n::PiecePtr>::const_iterator p2_it;
                      for (p2_it = p2_pieces.begin(); p2_it != p2_pieces.end(); ++p2_it)
                      {
@@ -199,16 +220,26 @@ void StandoffServer_c::findGames(ConnectHandler_n::Address_c& to_address)
 {
    unsigned char data[ConnectHandler_n::MAX_PACKET_SIZE]; 
    data[0] = (unsigned char)(mGames.size());
-   std::vector<GamePtr>::iterator it;
-   for (it = mGames.begin(); it != mGames.end(); ++it)
+   if (mGames.size() > 0)
    {
-      data[1] = (*it)->mGameId;
-      data[2] = (*it)->mIsOpen;
-      data[3] = (unsigned char)((*it)->mName.length());
-      for (unsigned int i = 0; i < (*it)->mName.length(); ++it)
+      std::vector<GamePtr>::iterator it;
+      for (it = mGames.begin(); it != mGames.end(); ++it)
       {
-         data[4 + i] = (*it)->mName.at(i);
+         data[1] = (*it)->mGameId;
+         data[2] = (*it)->mIsOpen;
+         data[3] = (unsigned char)((*it)->mName.length());
+         for (int i = 0; i < (*it)->mName.length(); ++i)
+         {
+            data[4 + i] = (unsigned char)(*it)->mName.at(i);
+         }
+         if (!mConnectHandler.sendData(to_address, data))
+         {
+            printf("Message failed to send to client!\n");
+         }
       }
+   }
+   else
+   {
       if (!mConnectHandler.sendData(to_address, data))
       {
          printf("Message failed to send to client!\n");

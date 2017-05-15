@@ -61,30 +61,6 @@ bool LSocket::open(unsigned short port)
       closeSocket();
    }
    return isOpen();
-
-   // #if PLATFORM == PLATFORM_MAC || PLATFORM == PLATFORM_UNIX
-      
-   //          int nonBlocking = 1;
-   //          if ( fcntl( mSocket, F_SETFL, O_NONBLOCK, nonBlocking ) == -1 )
-   //          {
-   //             printf( "failed to set non-blocking socket\n" );
-   //             closeSocket();
-   //             return false;
-   //          }
-         
-   //       #elif PLATFORM == PLATFORM_WINDOWS
-      
-   //          DWORD nonBlocking = 1;
-   //          if ( ioctlsocket( socket, FIONBIO, &nonBlocking ) != 0 )
-   //          {
-   //             printf( "failed to set non-blocking socket\n" );
-   //             closeSocket();
-   //             return false;
-   //          }
-
-   //       #endif
-      
-   //       return true;
 }
 
 void LSocket::closeSocket()
@@ -136,7 +112,7 @@ bool LSocket::send(const Address_c & destination,
 
    if (sent_bytes != packet_size)
    {
-       printf( "failed to send packet\n" );
+       printf( "Failed to send packet!\n" );
        return false;
    }
 

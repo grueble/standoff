@@ -1,5 +1,35 @@
-# the type of compiler to use
-CC=g++ -ID:/dev/vs_dev_lib/include -LD:/dev/vs_dev_lib/lib/x86 -g -ggdb3
+# dodge differences in uname implementation and output
+ifeq ($(OS), Windows_NT)
+	UNAME_S := Windows
+else
+	UNAME_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
+endif
+
+# platform specific flags for the compiler and linker, respectively
+CCFLAGS=
+LDFLAGS=
+FRAMEWORKS=
+ifeq ($(UNAME_S), Windows)
+	CCFLAGS+=-ID:/dev/vs_dev_lib/include
+	LDFLAGS+=-LD:/dev/vs_dev_lib/lib/x86
+endif
+ifeq ($(UNAME_S), Darwin)
+	CCFLAGS+=-I/Library/Frameworks/SDL2.framework/Headers \
+				-I/Library/Frameworks/SDL2_Image.framework/Headers
+	LDFLAGS+=-L/Library/Frameworks/SDL2.framework \
+        		-L/Library/Frameworks/SDL2_Image.framework \
+   FRAMEWORKS+=-framework SDL2main -framework SDL2 -framework SDL2_Image
+endif
+ifeq ($(UNAME_S), LINUX)
+	CCFLAGS+=
+	LDFLAGS+=
+endif
+
+# debug flags, if any
+DEBUG=-g -ggdb3
+
+# the main call to the compiler
+CC=g++ $(CCFLAGS) $(LDFLAGS) $(FRAMEWORKS) $(DEBUG)
 
 # the flags to pass to the compiler
 CFLAGS=-std=c++14 -c -Wall -w
@@ -32,14 +62,6 @@ SERVER_SRCS=$(foreach dir,$(SERVER_SUBDIRS),$(wildcard $(dir)/*.cpp))
 CLIENT_OBJS=$(CLIENT_SRCS:.cpp=.o)
 SERVER_OBJS=$(SERVER_SRCS:.cpp=.o)
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# APP_OBJS=$(CLIENT_DIR)/StandoffApp.o \
-# 			$(SDLF_DIR)/LTexture.o $(SDLF_DIR)/ResourceManager.o \
-# 			$(NET_DIR)/Address.o $(NET_DIR)/ConnectHandler.o $(NET_DIR)/LSocket.o \
-# 			$(GAME_DIR)/Game.o $(GAME_DIR)/Piece.o
-# G_OBJS=$(SDLF_DIR)/LTexture.o $(SDLF_DIR)/ResourceManager.o
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 # source paths used to build specific objects
 CLIENT=StandoffClient/StandoffClient.cpp
 SERVER=StandoffServer/StandoffServer.cpp
@@ -71,14 +93,6 @@ $(BUILD_DIR)/client: $(CLIENT_OBJS)
 
 $(BUILD_DIR)/server: $(SERVER_OBJS)
 	$(CC) $(LFLAGS) -o $@ $(SERVER_OBJS) $(LIBS)
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# $(BUILD_DIR)/app: $(APP_OBJS)
-# 	$(CC) $(LFLAGS) -o $@ $(APP_OBJS) $(LIBS)
-
-# $(BUILD_DIR)/g: $(G_OBJS)
-# 	$(CC) $(LFLAGS) -o $@ $(G_OBJS) $(LIBS)
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 $(CLIENT_DIR)/StandoffClient.o: $(CLIENT) $(CLIENTH) $(APPH) $(NETH)
 	$(CC) $(CFLAGS) $< -o $@
