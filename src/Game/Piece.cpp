@@ -35,16 +35,13 @@ const std::pair<int, int>& Piece_c::getPosition()
 
 void Piece_c::setPosition(const std::pair<int, int>& new_position)
 {
-   // printf("SET_POS\n");
    switch (mPlayState)
    {
       case RESERVE :
       {
          if (this->isValidDeployment(new_position))
          {
-            // printf("VALID\n");
             mPosition = new_position;
-            this->setPlayState(LIVE);
          }
          else 
          {

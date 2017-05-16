@@ -2,6 +2,7 @@
 #include "Piece.hpp"
 #include <vector>
 #include <iostream>
+#include <cmath>
 
 using namespace Game_n;
 
@@ -33,7 +34,7 @@ Game_c::~Game_c()
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// - Public Action Functions
+// - move
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void Game_c::move(const std::pair<int, int>& screen_tile_coord)
 {
@@ -43,33 +44,42 @@ void Game_c::move(const std::pair<int, int>& screen_tile_coord)
        screen_tile_coord.second >= BOARD_COORD.second &&
        screen_tile_coord.second < BOARD_COORD.second + BOARD_SIDE_LENGTH)
    {
-      // the briefcase moves with any piece that starts a move from its position
-      if (mCurrentPiece->getPosition() == BRIEFCASE_COORD) 
-      { 
-         mBriefcasePosition = screen_tile_coord; 
-      }
-
-      // a piece moved from reserve waits for a direction
-      if (mCurrentPiece->getPlayState() == Piece_n::RESERVE) 
+      // if the move is within one tile of the current piece's starting position...
+      if ((abs(screen_tile_coord.first - mCurrentPiece->getPosition().first) <= 1 &&
+           abs(screen_tile_coord.second - mCurrentPiece->getPosition().second) <= 1) ||
+           mCurrentPiece->getPlayState() == Piece_n::RESERVE) 
       {
-         if (mCurrentPiece->getPieceType() != Piece_n::PAWN)
-         {
-            mCurrentMove.mCurrentAction = PRE_DEPLOY;
+         // the briefcase moves with any piece that starts a move from its position
+         if (mCurrentPiece->getPosition() == BRIEFCASE_COORD) 
+         { 
+            mBriefcasePosition = screen_tile_coord; 
          }
-         else // unless that piece is a pawn
+   
+         // a piece moved from reserve waits for a direction
+         if (mCurrentPiece->getPlayState() == Piece_n::RESERVE) 
          {
-            mCurrentMove.mCurrentAction = DEPLOY;
+            if (mCurrentPiece->isValidDeployment(screen_tile_coord))
+            {
+               if (mCurrentPiece->getPieceType() != Piece_n::PAWN)
+               {
+                  mCurrentMove.mCurrentAction = PRE_DEPLOY;
+               }
+               else // unless that piece is a pawn
+               {
+                  mCurrentMove.mCurrentAction = DEPLOY;
+               }
+            }
          }
+         else // live pieces cannot be rotated after a move
+         {
+            mCurrentMove.mCurrentAction = MOVE;
+         }
+   
+         // store data about the move
+         mCurrentMove.mMovedPiece = mCurrentPiece;
+         mCurrentMove.mPrevPosition = mCurrentPiece->getPosition();
+         mCurrentPiece->setPosition(screen_tile_coord);
       }
-      else // live pieces cannot be rotated after a move
-      {
-         mCurrentMove.mCurrentAction = MOVE;
-      }
-
-      // store data about the move
-      mCurrentMove.mMovedPiece = mCurrentPiece;
-      mCurrentMove.mPrevPosition = mCurrentPiece->getPosition();
-      mCurrentPiece->setPosition(screen_tile_coord);
    }
    else // invalid move
    {
@@ -77,20 +87,26 @@ void Game_c::move(const std::pair<int, int>& screen_tile_coord)
    }
 }
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// - rotate
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void Game_c::rotate(const Piece_n::Direction_e& rotate_direction)
 {
+   // a piece is fully deployed after both a move and a rotation
+   if (mCurrentMove.mCurrentAction == PRE_DEPLOY) 
+   { 
+      // std::cout << static_cast<int>(mCurrentPiece->getPlayState()) << std::endl;
+      mCurrentPiece->nextPlayState();
+      mCurrentMove.mCurrentAction = DEPLOY;
+   }
+   // only rotate live pieces
    if (mCurrentPiece->getPlayState() == Piece_n::LIVE)
    {
-      // a piece is fully deployed after both a move and a rotation
-      if (mCurrentMove.mCurrentAction == PRE_DEPLOY) 
-      { 
-         mCurrentMove.mCurrentAction = DEPLOY;
-      }
-      else // o/w this is just a standard rotation
+      // if this isn't a deployment it's just a standard rotation
+      if (mCurrentMove.mCurrentAction != DEPLOY)
       {
          mCurrentMove.mCurrentAction = ROTATE;
       }
-
       // store data about the move
       mCurrentMove.mMovedPiece = mCurrentPiece;
       mCurrentMove.mPrevDirection = mCurrentPiece->getDirection();
@@ -98,42 +114,9 @@ void Game_c::rotate(const Piece_n::Direction_e& rotate_direction)
    }
 }
 
-void Game_c::shootout()
-{
-   std::vector<PiecePtr>::iterator p1_it;
-   for (p1_it = mPlayer1Pieces.begin(); p1_it != mPlayer1Pieces.end(); ++p1_it)
-   {
-      if ((*p1_it)->getPlayState() != Piece_n::RESERVE && (*p1_it)->getPieceType() != Piece_n::PAWN)
-      {
-         detectHit(**p1_it, mPlayer2Pieces);
-      }
-   }
-   std::vector<PiecePtr>::iterator p2_it;
-   for (p2_it = mPlayer2Pieces.begin(); p2_it != mPlayer2Pieces.end(); ++p2_it)
-   {
-      if ((*p2_it)->getPlayState() != Piece_n::RESERVE && (*p2_it)->getPieceType() != Piece_n::PAWN)
-      {
-         detectHit(**p2_it, mPlayer1Pieces);
-      }
-   }
-
-   for (p1_it = mPlayer1Pieces.begin(); p1_it != mPlayer1Pieces.end(); p1_it++)
-   {
-      if ((*p1_it)->getPlayState() == Piece_n::DEAD)
-      {
-         p1_it = mPlayer1Pieces.erase(p1_it);
-      }
-   }
-
-   for (p2_it = mPlayer2Pieces.begin(); p2_it != mPlayer2Pieces.end(); p2_it++)
-   {
-      if ((*p2_it)->getPlayState() == Piece_n::DEAD)
-      {
-         p2_it = mPlayer2Pieces.erase(p2_it);
-      }
-   }
-}
-
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// - State Control: nextPlayer, revertMove
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void Game_c::nextPlayer()
 {
    // null stored pointers
@@ -367,230 +350,232 @@ void Game_c::initPieces()
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// - shootout
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void Game_c::shootout()
+{
+   // stores the indices of all pieces hit over the course of the shootout
+   std::vector<std::pair<int, int>> hit_piece_index;
+
+   std::vector<PiecePtr>::iterator p1_it;
+   for (p1_it = mPlayer1Pieces.begin(); p1_it != mPlayer1Pieces.end(); ++p1_it)
+   {
+      if ((*p1_it)->getPlayState() == Piece_n::LIVE && (*p1_it)->getPieceType() != Piece_n::PAWN)
+      {
+         Piece_n::Direction_e direction = (*p1_it)->getDirection();
+         hit_piece_index.push_back(
+            std::make_pair(
+               1, 
+               detectHit(**p1_it, direction, mPlayer2Pieces)));
+
+         if ((*p1_it)->getPieceType() == Piece_n::SLINGER)
+         {
+            Piece_n::Direction_e secondary_direction;
+            switch(direction)
+            {
+               case Piece_n::UP : { secondary_direction = Piece_n::RIGHT; }
+               case Piece_n::DOWN : { secondary_direction = Piece_n::LEFT; }
+               case Piece_n::LEFT : { secondary_direction = Piece_n::UP; }
+               case Piece_n::RIGHT : { secondary_direction = Piece_n::DOWN; }
+            }
+            hit_piece_index.push_back(
+               std::make_pair(
+                  1,
+                  detectHit(**p1_it, secondary_direction, mPlayer2Pieces)));
+         }
+      }
+   }
+   std::vector<PiecePtr>::iterator p2_it;
+   for (p2_it = mPlayer2Pieces.begin(); p2_it != mPlayer2Pieces.end(); ++p2_it)
+   {
+      if ((*p2_it)->getPlayState() == Piece_n::LIVE && (*p2_it)->getPieceType() != Piece_n::PAWN)
+      {
+         Piece_n::Direction_e direction = (*p2_it)->getDirection();
+         hit_piece_index.push_back(
+            std::make_pair(
+               2,
+               detectHit(**p2_it, direction, mPlayer1Pieces)));
+
+         if ((*p2_it)->getPieceType() == Piece_n::SLINGER)
+         {
+            Piece_n::Direction_e secondary_direction;
+            switch(direction)
+            {
+               case Piece_n::UP : { secondary_direction = Piece_n::RIGHT; }
+               case Piece_n::DOWN : { secondary_direction = Piece_n::LEFT; }
+               case Piece_n::LEFT : { secondary_direction = Piece_n::UP; }
+               case Piece_n::RIGHT : { secondary_direction = Piece_n::DOWN; }
+            }
+            hit_piece_index.push_back(
+               std::make_pair(
+                  2,
+                  detectHit(**p2_it, secondary_direction, mPlayer1Pieces)));
+         }
+      }
+   }
+
+   std::vector<std::pair<int, int> >::iterator hit_it;
+   for (hit_it = hit_piece_index.begin(); hit_it != hit_piece_index.end(); ++hit_it)
+   {
+      if (hit_it->second != -1)
+      {
+         if (hit_it->first == 1) // P1's hits
+         {
+            mPlayer2Pieces.at(hit_it->second)->nextPlayState();
+         }
+         else // P2's hits
+         {
+            mPlayer1Pieces.at(hit_it->second)->nextPlayState();         }
+      }
+   }
+}
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // - detectHit
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void Game_c::detectHit(Piece_n::Piece_c& piece, std::vector<PiecePtr>& pieces)
+int Game_c::detectHit(Piece_n::Piece_c& piece, 
+                      Piece_n::Direction_e direction,
+                      std::vector<PiecePtr>& pieces)
 {
-   // true if the supplied piece is a slinger; triggers additional hit detections
-   bool slinger_flag = false;
-   if (piece.getPieceType() == Piece_n::SLINGER) { slinger_flag = true; }
-
    // true once if we have already hit a piece (monodirectional)
    bool hit_piece_flag = false;
-   bool slinger_hit_piece_flag = false;
 
    // stores the hit piece closest to the shooter
    PiecePtr hit_piece;
-   PiecePtr slinger_hit_piece;
 
-   switch (piece.getDirection())
+   // stores the index of the closest piece hit by the bullet ray
+   int hit_piece_index = -1;
+
+   std::vector<PiecePtr>::iterator it;
+   for (it = pieces.begin(); it != pieces.end(); ++it)
+   { 
+      switch (direction)
       {
-      case Piece_n::UP :
-      {
-         std::vector<PiecePtr>::iterator it;
-         for (it = pieces.begin(); it != pieces.end(); ++it)
+         case Piece_n::UP :
          {
-            if ((*it)->getPlayState() != Piece_n::RESERVE)
+            int index = 0;
+            std::vector<PiecePtr>::iterator it;
+            for (it = pieces.begin(); it != pieces.end(); ++it)
             {
-               if ((*it)->getPosition().first == piece.getPosition().first &&
-                  (*it)->getPosition().second < piece.getPosition().second)
-               {
-                  if (hit_piece_flag &&
-                     (*it)->getPosition().second > hit_piece->getPosition().second)
-                  {
-                     hit_piece = *it;
-                  }
-                  else
-                  {
-                     hit_piece = *it;
-                     hit_piece_flag = true;
-                  }
-               }
-               if (slinger_flag)
-               {
-                  if ((*it)->getPosition().second == piece.getPosition().second &&
-                     (*it)->getPosition().first > piece.getPosition().first)
-                  {
-                     if (slinger_hit_piece_flag &&
-                        (*it)->getPosition().first < slinger_hit_piece->getPosition().first)
-                     {
-                        slinger_hit_piece = *it;
-                     }
-                     else
-                     {
-                        slinger_hit_piece = *it;
-                        slinger_hit_piece_flag = true;
-                     }
-                  }
-               }
-            }
-         }
-         if (hit_piece_flag)
-         {
-            hit_piece->setPlayState(Piece_n::DEAD);
-         }
-         if (slinger_hit_piece_flag)
-         {
-            slinger_hit_piece->setPlayState(Piece_n::DEAD);
-         }
-         break;
-      }
-      case Piece_n::DOWN :
-      {
-         std::vector<PiecePtr>::iterator it;
-         for (it = pieces.begin(); it != pieces.end(); ++it)
-         {
-            if ((*it)->getPlayState() != Piece_n::RESERVE)
-            {
-               if ((*it)->getPosition().first == piece.getPosition().first &&
-                  (*it)->getPosition().second > piece.getPosition().second)
-               {
-                  if (hit_piece_flag &&
-                     (*it)->getPosition().second < hit_piece->getPosition().second)
-                  {
-                     hit_piece = *it;
-                  }
-                  else
-                  {
-                     hit_piece = *it;
-                     hit_piece_flag = true;
-                  }
-               }
-               if (slinger_flag)
-               {
-                  if ((*it)->getPosition().second == piece.getPosition().second &&
-                     (*it)->getPosition().first < piece.getPosition().first)
-                  {
-                     if (slinger_hit_piece_flag &&
-                        (*it)->getPosition().first > slinger_hit_piece->getPosition().first)
-                     {
-                        slinger_hit_piece = *it;
-                     }
-                     else
-                     {
-                        slinger_hit_piece = *it;
-                        slinger_hit_piece_flag = true;
-                     }
-                  }
-               }
-            }
-         }
-         if (hit_piece_flag)
-         {
-            hit_piece->setPlayState(Piece_n::DEAD);
-         }
-         if (slinger_hit_piece_flag)
-         {
-            slinger_hit_piece->setPlayState(Piece_n::DEAD);
-         }
-         break;
-      }
-      case Piece_n::LEFT :
-      {
-         std::vector<PiecePtr>::iterator it;
-         for (it = pieces.begin(); it != pieces.end(); ++it)
-         {
-            if ((*it)->getPlayState() != Piece_n::RESERVE)
-            {
-               if ((*it)->getPosition().second == piece.getPosition().second &&
-                  (*it)->getPosition().first < piece.getPosition().first)
-               {
-                  if (hit_piece_flag &&
-                     (*it)->getPosition().first > hit_piece->getPosition().first)
-                  {
-                     hit_piece = *it;
-                  }
-                  else
-                  {
-                     hit_piece = *it;
-                     hit_piece_flag = true;
-                  }
-               }
-               if (slinger_flag)
+               if ((*it)->getPlayState() == Piece_n::LIVE)
                {
                   if ((*it)->getPosition().first == piece.getPosition().first &&
-                     (*it)->getPosition().second < piece.getPosition().second)
+                      (*it)->getPosition().second < piece.getPosition().second)
                   {
-                     if (slinger_hit_piece_flag &&
+                     if (hit_piece_flag &&
                         (*it)->getPosition().second > hit_piece->getPosition().second)
                      {
-                        slinger_hit_piece = *it;
+                        hit_piece_index = index;
+                        hit_piece = *it;
                      }
                      else
                      {
-                        slinger_hit_piece = *it;
-                        slinger_hit_piece_flag = true;
+                        hit_piece_index = index;
+                        hit_piece = *it;
+                        hit_piece_flag = true;
                      }
                   }
                }
+               index++;
             }
+            break;
          }
-         if (hit_piece_flag)
+         case Piece_n::DOWN :
          {
-            hit_piece->setPlayState(Piece_n::DEAD);
-         }
-         if (slinger_hit_piece_flag)
-         {
-            slinger_hit_piece->setPlayState(Piece_n::DEAD);
-         }
-         break;
-      }
-      case Piece_n::RIGHT :
-      {
-         std::vector<PiecePtr>::iterator it;
-         for (it = pieces.begin(); it != pieces.end(); ++it)
-         {
-            if ((*it)->getPlayState() != Piece_n::RESERVE)
+            int index = 0;
+            std::vector<PiecePtr>::iterator it;
+            for (it = pieces.begin(); it != pieces.end(); ++it)
             {
-               if ((*it)->getPosition().second == piece.getPosition().second &&
-                  (*it)->getPosition().first > piece.getPosition().first)
-               {
-                  if (hit_piece_flag &&
-                     (*it)->getPosition().first < hit_piece->getPosition().first)
-                  {
-                     hit_piece = *it;
-                  }
-                  else
-                  {
-                     hit_piece = *it;
-                     hit_piece_flag = true;
-                  }
-               }
-               if (slinger_flag)
+               if ((*it)->getPlayState() == Piece_n::LIVE)
                {
                   if ((*it)->getPosition().first == piece.getPosition().first &&
                      (*it)->getPosition().second > piece.getPosition().second)
                   {
-                     if (slinger_hit_piece_flag &&
+                     if (hit_piece_flag &&
                         (*it)->getPosition().second < hit_piece->getPosition().second)
                      {
-                        slinger_hit_piece = *it;
+                        hit_piece_index = index;
+                        hit_piece = *it;
                      }
                      else
                      {
-                        slinger_hit_piece = *it;
-                        slinger_hit_piece_flag = true;
+                        hit_piece_index = index;
+                        hit_piece = *it;
+                        hit_piece_flag = true;
                      }
                   }
                }
+               index++;
             }
+            break;
          }
-         if (hit_piece_flag)
+         case Piece_n::LEFT :
          {
-            hit_piece->setPlayState(Piece_n::DEAD);
+            int index = 0;
+            std::vector<PiecePtr>::iterator it;
+            for (it = pieces.begin(); it != pieces.end(); ++it)
+            {
+               if ((*it)->getPlayState() == Piece_n::LIVE)
+               {
+                  if ((*it)->getPosition().second == piece.getPosition().second &&
+                      (*it)->getPosition().first < piece.getPosition().first)
+                  {
+                     if (hit_piece_flag &&
+                        (*it)->getPosition().first > hit_piece->getPosition().first)
+                     {
+                        hit_piece_index = index;
+                        hit_piece = *it;
+                     }
+                     else
+                     {
+                        hit_piece_index = index;
+                        hit_piece = *it;
+                        hit_piece_flag = true;
+                     }
+                  }
+               }
+               index++;
+            }
+            break;
          }
-         if (slinger_hit_piece_flag)
+         case Piece_n::RIGHT :
          {
-            slinger_hit_piece->setPlayState(Piece_n::DEAD);
+            int index = 0;
+            std::vector<PiecePtr>::iterator it;
+            for (it = pieces.begin(); it != pieces.end(); ++it)
+            {
+               if ((*it)->getPlayState() == Piece_n::LIVE)
+               {
+                  if ((*it)->getPosition().second == piece.getPosition().second &&
+                      (*it)->getPosition().first > piece.getPosition().first)
+                  {
+                     if (hit_piece_flag &&
+                        (*it)->getPosition().first < hit_piece->getPosition().first)
+                     {
+                        hit_piece_index = index;
+                        hit_piece = *it;
+                     }
+                     else
+                     {
+                        hit_piece_index = index;
+                        hit_piece = *it;
+                        hit_piece_flag = true;
+                     }
+                  }
+               }
+               index++;
+            }
+            break;
          }
-         break;
-      }
-      default :
-      {
-         // in case a reserve piece is hit inadvertently 
-         break;
+         default :
+         {
+            // in case a reserve piece is hit inadvertently 
+            break;
+         }
       }
    }
+
+   return hit_piece_index;
 }
 
 bool Game_c::gameOver()

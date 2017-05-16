@@ -116,7 +116,7 @@ namespace Game_n
       void initPieces();
 
       // determines if a piece hits during a shootout  
-      void detectHit(Piece_n::Piece_c& piece, std::vector<PiecePtr>& pieces);
+      int detectHit(Piece_n::Piece_c& piece, Piece_n::Direction_e direction, std::vector<PiecePtr>& pieces);
 
       // stores references to the two player's piece lists
       std::vector<PiecePtr> mPlayer1Pieces;

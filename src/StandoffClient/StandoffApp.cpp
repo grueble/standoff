@@ -239,7 +239,7 @@ void StandoffApp_c::draw()
    // render the board as the base layer
    mResourceManager.renderSpriteAt(ResourceManager_n::BOARD, std::pair<int,int>(Game_n::BOARD_COORD));
 
-   // render all of player 1's pieces in reserve
+   // render all of player 1's pieces
    const std::vector<Game_n::PiecePtr>& p1_pieces = mCurrentGame.getPlayer1Pieces();
    std::vector<Game_n::PiecePtr>::const_iterator p1_it;
    for (p1_it = p1_pieces.begin(); p1_it != p1_pieces.end(); ++p1_it)
@@ -282,42 +282,45 @@ void StandoffApp_c::draw()
       }
    }
 
-   // render all of player 2's pieces in reserve
+   // render all of player 2's pieces
    const std::vector<Game_n::PiecePtr>& p2_pieces = mCurrentGame.getPlayer2Pieces();
    std::vector<Game_n::PiecePtr>::const_iterator p2_it;
    for (p2_it = p2_pieces.begin(); p2_it != p2_pieces.end(); ++p2_it)
    {
-      double piece_direction;
-      switch ((*p2_it)->getDirection())
+      if ((*p2_it)->getPlayState() != Piece_n::DEAD)
       {
-         case Piece_n::DOWN: { piece_direction = 180; break; }
-         case Piece_n::LEFT: { piece_direction = 270; break; }
-         case Piece_n::RIGHT: { piece_direction = 90; break; }
-         default: { piece_direction = 0; break; } // defaults to UP
-      }
-      switch ((*p2_it)->getPieceType())
-      {
-         case Piece_n::PAWN:
+         double piece_direction;
+         switch ((*p2_it)->getDirection())
          {
-            mResourceManager.renderSpriteAt(
-               ResourceManager_n::P2_PAWN, (*p2_it)->getPosition(), piece_direction); 
-            break;
+            case Piece_n::DOWN: { piece_direction = 180; break; }
+            case Piece_n::LEFT: { piece_direction = 270; break; }
+            case Piece_n::RIGHT: { piece_direction = 90; break; }
+            default: { piece_direction = 0; break; } // defaults to UP
          }
-         case Piece_n::GUN:
+         switch ((*p2_it)->getPieceType())
          {
-            mResourceManager.renderSpriteAt(
-               ResourceManager_n::P2_GUN, (*p2_it)->getPosition(), piece_direction); 
-            break;
-         }
-         case Piece_n::SLINGER:
-         {
-            mResourceManager.renderSpriteAt(
-               ResourceManager_n::P2_SLINGER, (*p2_it)->getPosition(), piece_direction); 
-            break;
-         }
-         default :
-         {
-            break;
+            case Piece_n::PAWN:
+            {
+               mResourceManager.renderSpriteAt(
+                  ResourceManager_n::P2_PAWN, (*p2_it)->getPosition(), piece_direction); 
+               break;
+            }
+            case Piece_n::GUN:
+            {
+               mResourceManager.renderSpriteAt(
+                  ResourceManager_n::P2_GUN, (*p2_it)->getPosition(), piece_direction); 
+               break;
+            }
+            case Piece_n::SLINGER:
+            {
+               mResourceManager.renderSpriteAt(
+                  ResourceManager_n::P2_SLINGER, (*p2_it)->getPosition(), piece_direction); 
+               break;
+            }
+            default :
+            {
+               break;
+            }
          }
       }
    }
