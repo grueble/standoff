@@ -8,7 +8,8 @@
 namespace Game_n
 {
    // defines a smart pointer wrapper for the piece class
-   typedef std::shared_ptr<Piece_n::Piece_c> PiecePtr;
+   // typedef std::shared_ptr<Piece_n::Piece_c> PiecePtr;
+   typedef Piece_n::Piece_c* PiecePtr;
 
    // the board's upper left hand corner in "screen tile" coordinates
    // -> the window's upper left hand corner is at (0, 0)
@@ -58,6 +59,7 @@ namespace Game_n
 
       // initiates a shootout event
       void shootout();
+      void shootout2();
 
       // passes the turn to the player whose turn it is not
       void nextPlayer();
@@ -114,9 +116,13 @@ namespace Game_n
 
       // initializes both player's pieces
       void initPieces();
+      void initPieces2();
 
       // determines if a piece hits during a shootout  
-      int detectHit(Piece_n::Piece_c& piece, Piece_n::Direction_e direction, std::vector<PiecePtr>& pieces);
+      int detectHit(Piece_n::Piece_c& piece, Piece_n::Direction_e direction, 
+                    std::vector<PiecePtr>& pieces);
+      void detectHit2(Piece_n::Piece_c& piece, Piece_n::Direction_e direction, 
+                      std::vector<PiecePtr>& pieces);
 
       // stores references to the two player's piece lists
       std::vector<PiecePtr> mPlayer1Pieces;

@@ -1,132 +1,45 @@
-# dodge differences in uname implementation and output
-ifeq ($(OS), Windows_NT)
-	UNAME_S := Windows
-else
-	UNAME_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
-endif
+# makes use of implicit rules
+# -> https://codereview.stackexchange.com/questions/78855/makefile-for-c-opengl-with-glfw-and-glad
+# -> https://www.gnu.org/software/make/manual/html_node/Implicit-Rules.html
 
-# platform specific flags for the compiler and linker, respectively
-CCFLAGS=
-LDFLAGS=
-FRAMEWORKS=
-ifeq ($(UNAME_S), Windows)
-	CCFLAGS+=-ID:/dev/vs_dev_lib/include
-	LDFLAGS+=-LD:/dev/vs_dev_lib/lib/x86
-endif
-ifeq ($(UNAME_S), Darwin)
-	CCFLAGS+=-I/Library/Frameworks/SDL2.framework/Headers \
-				-I/Library/Frameworks/SDL2_Image.framework/Headers
-	LDFLAGS+=-L/Library/Frameworks/SDL2.framework \
-        		-L/Library/Frameworks/SDL2_Image.framework \
-   FRAMEWORKS+=-framework SDL2main -framework SDL2 -framework SDL2_Image
-endif
-ifeq ($(UNAME_S), LINUX)
-	CCFLAGS+=
-	LDFLAGS+=
-endif
+# the compiler
+CXX=g++
 
-# debug flags, if any
-DEBUG=-g -ggdb3
+# include and lib paths | NOTE: string together unique paths for more flexibility
+# -> use x86 for MinGW32 and x64 for cygwin64
+INCL_PATH=-ID:/dev/dev_lib/include
+LIB_PATH=-LD:/dev/dev_lib/lib/x64 
 
-# the main call to the compiler
-CC=g++ $(CCFLAGS) $(LDFLAGS) $(FRAMEWORKS) $(DEBUG)
+# the flags to pass to the compiler/linker | NOTE: using standard names to leverage implicit rules
+CXXFLAGS=-std=c++14 -w -Wall -g -ggdb3 $(INCL_PATH)
+LDFLAGS=$(LIB_PATH) -Wl,-subsystem,windows -lSDL2main -lSDL2 -lSDL2_image -mwindows
 
-# the flags to pass to the compiler
-CFLAGS=-std=c++14 -c -Wall -w
-
-# the flags to pass to the linker
-LFLAGS=-Wall
-
-# libraries to link with
-LIBS=-lSDL2main -lSDL2 -lSDL2_image
-
-# project directories
 BUILD_DIR=../build
-CLIENT_DIR=StandoffClient
-SERVER_DIR=StandoffServer
-SDLF_DIR=ResourceManager
-NET_DIR=ConnectHandler
-GAME_DIR=Game
 
-# relevant subdirectories grouped by generated executable
-CORE_SUBDIRS=$(NET_DIR) $(GAME_DIR)
-CLIENT_SUBDIRS=$(CLIENT_DIR) $(SDLF_DIR) $(CORE_SUBDIRS)
-SERVER_SUBDIRS=$(SERVER_DIR) $(CORE_SUBDIRS)
-CLEAN_SUBDIRS=$(CLIENT_SUBDIRS) $(SERVER_DIR)
+NET_OBJS=$(BUILD_DIR)/Address.o $(BUILD_DIR)/ConnectHandler.o $(BUILD_DIR)/LSocket.o
+GAME_OBJS=$(BUILD_DIR)/Game.o $(BUILD_DIR)/Piece.o
+SDL_OBJS=$(BUILD_DIR)/LTexture.o $(BUILD_DIR)/ResourceManager.o
 
-# pattern match for source code files
-CLIENT_SRCS=$(foreach dir,$(CLIENT_SUBDIRS),$(wildcard $(dir)/*.cpp))
-SERVER_SRCS=$(foreach dir,$(SERVER_SUBDIRS),$(wildcard $(dir)/*.cpp))
+CLIENT=$(BUILD_DIR)/client.exe
+CLI_OBJS=$(BUILD_DIR)/StandoffClient.o $(BUILD_DIR)/StandoffApp.o $(NET_OBJS) $(GAME_OBJS) $(SDL_OBJS)
 
-# pattern match search for built objects
-CLIENT_OBJS=$(CLIENT_SRCS:.cpp=.o)
-SERVER_OBJS=$(SERVER_SRCS:.cpp=.o)
+SERVER=$(BUILD_DIR)/server.exe
+SERV_OBJS=$(BUILD_DIR)/StandoffServer.o $(NET_OBJS) $(GAME_OBJS)
 
-# source paths used to build specific objects
-CLIENT=StandoffClient/StandoffClient.cpp
-SERVER=StandoffServer/StandoffServer.cpp
-APP=StandoffClient/StandoffApp.cpp
-SDLF=ResourceManager/ResourceManager.cpp
-LTEXT=ResourceManager/LTexture.cpp
-NET=ConnectHandler/ConnectHandler.cpp
-LSOCK=ConnectHandler/LSocket.cpp
-ADDR=ConnectHandler/Address.cpp
-GAME=Game/Game.cpp
-PIECE=Game/Piece.cpp
+TARGET=$(CLIENT) $(SERVER)
+OBJS=$(wildcard *.o)
 
-# header paths used to build specific objects
-CLIENTH=StandoffClient/StandoffClient.hpp
-SERVERH=StandoffServer/StandoffServer.hpp
-APPH=StandoffClient/StandoffApp.hpp
-SDLFH=ResourceManager/ResourceManager.hpp
-LTEXTH=ResourceManager/LTexture.hpp
-NETH=ConnectHandler/ConnectHandler.hpp
-LSOCKH=ConnectHandler/LSocket.hpp
-ADDRH=ConnectHandler/Address.hpp
-GAMEH=Game/Game.hpp
-PIECEH=Game/Piece.hpp
+all: $(TARGET)
 
-all: $(BUILD_DIR)/client $(BUILD_DIR)/server
+$(CLIENT): $(CLI_OBJS)
+	$(CXX) -o $@ $^ $(LDFLAGS)
 
-$(BUILD_DIR)/client: $(CLIENT_OBJS)
-	$(CC) $(LFLAGS) -o $@ $(CLIENT_OBJS) $(LIBS)
+$(SERVER): $(SERV_OBJS)
+	$(CXX) -o $@ $^ $(LDFLAGS)
 
-$(BUILD_DIR)/server: $(SERVER_OBJS)
-	$(CC) $(LFLAGS) -o $@ $(SERVER_OBJS) $(LIBS)
+$(BUILD_DIR)/%.o: %.cpp
+	$(CXX) -c $(CXXFLAGS) $< -o $@
 
-$(CLIENT_DIR)/StandoffClient.o: $(CLIENT) $(CLIENTH) $(APPH) $(NETH)
-	$(CC) $(CFLAGS) $< -o $@
-
-$(SERVER_DIR)/StandoffServer.o: $(SERVER) $(SERVERH) $(NETH) $(GAMEH)
-	$(CC) $(CFLAGS) $< -o $@
-
-$(CLIENT_DIR)/StandoffApp.o: $(APP) $(APPH) $(NETH) $(GAMEH) $(SDLFH) 
-	$(CC) $(CFLAGS) $< -o $@
-
-$(SDLF_DIR)/ResourceManager.o: $(SDLF) $(SDLFH) $(LTEXTH)
-	$(CC) $(CFLAGS) $< -o $@
-
-$(SDLF_DIR)/LTexture.o: $(LTEXT) $(LTEXTH)
-	$(CC) $(CFLAGS) $< -o $@
-
-$(NET_DIR)/ConnectHandler.o: $(NET) $(NETH) $(LSOCKH)
-	$(CC) $(CFLAGS) $< -o $@
-
-$(NET_DIR)/LSocket.o: $(LSOCK) $(LSOCKH) $(ADDRH)
-	$(CC) $(CFLAGS) $< -o $@
-
-$(NET_DIR)/Address.o: $(ADDR) $(ADDRH)
-	$(CC) $(CFLAGS) $< -o $@
-
-$(GAME_DIR)/Game.o: $(GAME) $(GAMEH) $(PIECEH)
-	$(CC) $(CFLAGS) $< -o $@
-
-$(GAME_DIR)/Piece.o: $(PIECE) $(PIECEH)
-	$(CC) $(CFLAGS) $< -o $@
-
+.PHONY: clean
 clean:
-	for i in $(CLEAN_SUBDIRS); do \
-		rm $$i/*.o; \
-	done
-
-	rm $(BUILD_DIR)/client $(BUILD_DIR)/server
+	-rm $(CLI_OBJS) $(BUILD_DIR)/StandoffServer.o

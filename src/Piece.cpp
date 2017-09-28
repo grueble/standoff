@@ -15,8 +15,7 @@ Piece_c::Piece_c(const PieceType_e& piece_type,
    mPlayState(PlayState_e::RESERVE),
    mTeam(team)
 {
-   // printf("mD=%d", deployment_zones.size());
-   // mDeploymentZones = deployment_zones;
+
 }
 
 Piece_c::~Piece_c()
@@ -95,7 +94,6 @@ void Piece_c::nextPlayState()
       }
       case LIVE :
       {
-         // maybe just ~Piece_c()
          mPlayState = DEAD;
          break;
       }
@@ -122,14 +120,11 @@ const Team_e& Piece_c::getTeam() const
 
 bool Piece_c::isValidDeployment(const std::pair<int, int>& deploy_position)
 {
-   // printf("TRY: { %d, %d } w/ l=%d\n", deploy_position.first, deploy_position.second, mDeploymentZones.size());
    std::vector<std::pair<int, int>>::iterator it;
    for (it = mDeploymentZones.begin(); it != mDeploymentZones.end(); ++it)
    {
-      // printf("{ %d, %d }", it->first, it->second);
       if (deploy_position == *it)
       {
-         // printf("\n");
          return true;
       }
    }

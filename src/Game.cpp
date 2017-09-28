@@ -24,13 +24,28 @@ Game_c::Game_c() :
    mCurrentPiece(nullptr),
    mBriefcasePosition(BRIEFCASE_COORD)
 {
-   initPieces();
+   initPieces2();
 }
+
+// Game_c::~Game_c()
+// {
+//    mPlayer1Pieces.clear();
+//    mPlayer2Pieces.clear();
+// }
 
 Game_c::~Game_c()
 {
-   mPlayer1Pieces.clear();
-   mPlayer2Pieces.clear();
+   std::vector<PiecePtr>::iterator p1_it;
+   for (p1_it = mPlayer1Pieces.begin(); p1_it != mPlayer1Pieces.end(); ++p1_it)
+   {
+      delete (*p1_it);
+   }
+
+   std::vector<PiecePtr>::iterator p2_it;
+   for (p2_it = mPlayer2Pieces.begin(); p2_it != mPlayer2Pieces.end(); ++p2_it)
+   {
+      delete (*p2_it);
+   }
 }
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -38,6 +53,9 @@ Game_c::~Game_c()
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void Game_c::move(const std::pair<int, int>& screen_tile_coord)
 {
+   std::cout << "stc: { " << screen_tile_coord.first << " " << screen_tile_coord.second << " }" << std::endl;
+   std::cout << "pos: { " << mCurrentPiece->getPosition().first << " " << mCurrentPiece->getPosition().second << " }" << std::endl;
+
    // if the mouse click event's "screen tile" coordinate is within the board's bounds...
    if (screen_tile_coord.first >= BOARD_COORD.first &&
        screen_tile_coord.first < BOARD_COORD.first + BOARD_SIDE_LENGTH &&
@@ -60,6 +78,7 @@ void Game_c::move(const std::pair<int, int>& screen_tile_coord)
          {
             if (mCurrentPiece->isValidDeployment(screen_tile_coord))
             {
+               mCurrentPiece->nextPlayState();
                if (mCurrentPiece->getPieceType() != Piece_n::PAWN)
                {
                   mCurrentMove.mCurrentAction = PRE_DEPLOY;
@@ -74,11 +93,15 @@ void Game_c::move(const std::pair<int, int>& screen_tile_coord)
          {
             mCurrentMove.mCurrentAction = MOVE;
          }
+
+         std::cout << "DOGY" << std::endl;
    
          // store data about the move
          mCurrentMove.mMovedPiece = mCurrentPiece;
          mCurrentMove.mPrevPosition = mCurrentPiece->getPosition();
          mCurrentPiece->setPosition(screen_tile_coord);
+
+         std::cout << "pos: { " << mCurrentPiece->getPosition().first << " " << mCurrentPiece->getPosition().second << " }" << std::endl;
       }
    }
    else // invalid move
@@ -96,7 +119,7 @@ void Game_c::rotate(const Piece_n::Direction_e& rotate_direction)
    if (mCurrentMove.mCurrentAction == PRE_DEPLOY) 
    { 
       // std::cout << static_cast<int>(mCurrentPiece->getPlayState()) << std::endl;
-      mCurrentPiece->nextPlayState();
+      // mCurrentPiece->nextPlayState();
       mCurrentMove.mCurrentAction = DEPLOY;
    }
    // only rotate live pieces
@@ -212,9 +235,145 @@ Move_s& Game_c::getCurrentMove()
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // - initPieces
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-void Game_c::initPieces()
+// void Game_c::initPieces()
+// {
+//    // initialize player 1's starting reserve position (screen tile coordinates)
+//    std::pair<int, int> reserve_position = P1_RESERVE_COORD;
+
+//    std::vector<std::pair<int, int>> p1_gunslinger_deployment_zones =
+//    {
+//       std::make_pair(6, 9), std::make_pair(8, 9), std::make_pair(12, 9),
+//       std::make_pair(13, 2), std::make_pair(13, 4), std::make_pair(13, 8)
+//    };
+
+//    // create the set of valid deployment positions for player 1
+//    // std::vector<std::pair<int, int>> p1_pawn_deployment_zones = P1_GUNSLINGER_DEPLOYMENT_ZONES;
+//    // std::vector<std::pair<int, int>>::iterator p1_it;
+//    // p1_it = p1_pawn_deployment_zones.begin();
+//    // p1_it = p1_pawn_deployment_zones.insert(
+//    //    p1_it,
+//    //    {
+//    //       std::make_pair(BOARD_COORD.first + 1, BOARD_COORD.second + 4),
+//    //       std::make_pair(BOARD_COORD.first + 2, BOARD_COORD.second + 3),
+//    //       std::make_pair(BOARD_COORD.first + 3, BOARD_COORD.second + 2),
+//    //       std::make_pair(BOARD_COORD.first + 4, BOARD_COORD.second + 1)
+//    //    }
+//    // );
+
+//    // add pawns
+//    for (int i = 0; i < NUM_PAWNS; ++i)
+//    {
+//       mPlayer1Pieces.push_back(
+//          std::make_shared<Piece_n::Piece_c>(
+//             Piece_n::PAWN,
+//             p1_gunslinger_deployment_zones,
+//             reserve_position,
+//             Piece_n::PLAYER_ONE));
+//       reserve_position.second--;
+//    }
+
+//    // place guns on a new row
+//    reserve_position = P1_RESERVE_COORD;
+//    reserve_position.first++;
+
+//    // add guns
+//    for (int i = 0; i < NUM_GUNS; ++i)
+//    {
+//       mPlayer1Pieces.push_back(
+//          std::make_shared<Piece_n::Piece_c>(
+//             Piece_n::GUN,
+//             p1_gunslinger_deployment_zones,
+//             reserve_position,
+//             Piece_n::PLAYER_ONE));
+//       reserve_position.second--;
+//    }
+
+//    // place slingers on a new row
+//    reserve_position = P1_RESERVE_COORD;
+//    reserve_position.first = reserve_position.first + 2;
+
+//    // add slingers
+//    for (int i = 0; i < NUM_SLINGERS; ++i)
+//    {
+//       mPlayer1Pieces.push_back(
+//          std::make_shared<Piece_n::Piece_c>(
+//             Piece_n::SLINGER,
+//             p1_gunslinger_deployment_zones,
+//             reserve_position,
+//             Piece_n::PLAYER_ONE));
+//       reserve_position.second--;
+//    }
+
+//    // initialize player 2's starting reserve position (screen tile coordinates)
+//    reserve_position = P2_RESERVE_COORD;
+
+//    std::vector<std::pair<int, int>> p2_gunslinger_deployment_zones =
+//    {
+//       std::make_pair(6, 1), std::make_pair(10, 1), std::make_pair(12, 1),
+//       std::make_pair(5, 2), std::make_pair(5, 6), std::make_pair(5, 8)
+//    };
+
+//    // create the set of valid deployment positions for player 2
+//    // std::vector<std::pair<int, int>> p2_pawn_deployment_zones = P2_GUNSLINGER_DEPLOYMENT_ZONES;
+//    // std::vector<std::pair<int, int>>::iterator p2_it;
+//    // p2_it = p1_pawn_deployment_zones.begin();
+//    // p2_it = p1_pawn_deployment_zones.insert(
+//    //    p2_it, 
+//    //    {
+//    //       std::make_pair(BOARD_COORD.first + 4, BOARD_COORD.second + 7),
+//    //       std::make_pair(BOARD_COORD.first + 5, BOARD_COORD.second + 5),
+//    //       std::make_pair(BOARD_COORD.first + 6, BOARD_COORD.second + 6),
+//    //       std::make_pair(BOARD_COORD.first + 7, BOARD_COORD.second + 4)
+//    //    }
+//    // );
+
+//    // add pawns
+//    for (int i = 0; i < NUM_PAWNS; ++i)
+//    {
+//       mPlayer2Pieces.push_back(
+//          std::make_shared<Piece_n::Piece_c>(
+//             Piece_n::PAWN,
+//             p2_gunslinger_deployment_zones,
+//             reserve_position,
+//             Piece_n::PLAYER_TWO));
+//       reserve_position.second++;
+//    }
+
+//    // place guns on a new row
+//    reserve_position = P2_RESERVE_COORD;
+//    reserve_position.first--;
+
+//    // add guns
+//    for (int i = 0; i < NUM_GUNS; ++i)
+//    {
+//       mPlayer2Pieces.push_back(
+//          std::make_shared<Piece_n::Piece_c>(
+//             Piece_n::GUN,
+//             p2_gunslinger_deployment_zones,
+//             reserve_position,
+//             Piece_n::PLAYER_TWO));
+//       reserve_position.second++;
+//    }
+
+//    // place slingers on a new row
+//    reserve_position = P2_RESERVE_COORD;
+//    reserve_position.first = reserve_position.first - 2;
+
+//    // add slingers
+//    for (int i = 0; i < NUM_SLINGERS; ++i)
+//    {
+//       mPlayer2Pieces.push_back(
+//          std::make_shared<Piece_n::Piece_c>(
+//             Piece_n::SLINGER,
+//             p2_gunslinger_deployment_zones,
+//             reserve_position,
+//             Piece_n::PLAYER_TWO));
+//       reserve_position.second++;
+//    }
+// }
+
+void Game_c::initPieces2()
 {
-   // initialize player 1's starting reserve position (screen tile coordinates)
    std::pair<int, int> reserve_position = P1_RESERVE_COORD;
 
    std::vector<std::pair<int, int>> p1_gunslinger_deployment_zones =
@@ -223,25 +382,10 @@ void Game_c::initPieces()
       std::make_pair(13, 2), std::make_pair(13, 4), std::make_pair(13, 8)
    };
 
-   // create the set of valid deployment positions for player 1
-   // std::vector<std::pair<int, int>> p1_pawn_deployment_zones = P1_GUNSLINGER_DEPLOYMENT_ZONES;
-   // std::vector<std::pair<int, int>>::iterator p1_it;
-   // p1_it = p1_pawn_deployment_zones.begin();
-   // p1_it = p1_pawn_deployment_zones.insert(
-   //    p1_it,
-   //    {
-   //       std::make_pair(BOARD_COORD.first + 1, BOARD_COORD.second + 4),
-   //       std::make_pair(BOARD_COORD.first + 2, BOARD_COORD.second + 3),
-   //       std::make_pair(BOARD_COORD.first + 3, BOARD_COORD.second + 2),
-   //       std::make_pair(BOARD_COORD.first + 4, BOARD_COORD.second + 1)
-   //    }
-   // );
-
-   // add pawns
    for (int i = 0; i < NUM_PAWNS; ++i)
    {
       mPlayer1Pieces.push_back(
-         std::make_shared<Piece_n::Piece_c>(
+         new Piece_n::Piece_c(
             Piece_n::PAWN,
             p1_gunslinger_deployment_zones,
             reserve_position,
@@ -257,7 +401,7 @@ void Game_c::initPieces()
    for (int i = 0; i < NUM_GUNS; ++i)
    {
       mPlayer1Pieces.push_back(
-         std::make_shared<Piece_n::Piece_c>(
+         new Piece_n::Piece_c(
             Piece_n::GUN,
             p1_gunslinger_deployment_zones,
             reserve_position,
@@ -273,7 +417,7 @@ void Game_c::initPieces()
    for (int i = 0; i < NUM_SLINGERS; ++i)
    {
       mPlayer1Pieces.push_back(
-         std::make_shared<Piece_n::Piece_c>(
+         new Piece_n::Piece_c(
             Piece_n::SLINGER,
             p1_gunslinger_deployment_zones,
             reserve_position,
@@ -290,25 +434,11 @@ void Game_c::initPieces()
       std::make_pair(5, 2), std::make_pair(5, 6), std::make_pair(5, 8)
    };
 
-   // create the set of valid deployment positions for player 2
-   // std::vector<std::pair<int, int>> p2_pawn_deployment_zones = P2_GUNSLINGER_DEPLOYMENT_ZONES;
-   // std::vector<std::pair<int, int>>::iterator p2_it;
-   // p2_it = p1_pawn_deployment_zones.begin();
-   // p2_it = p1_pawn_deployment_zones.insert(
-   //    p2_it,
-   //    {
-   //       std::make_pair(BOARD_COORD.first + 4, BOARD_COORD.second + 7),
-   //       std::make_pair(BOARD_COORD.first + 5, BOARD_COORD.second + 5),
-   //       std::make_pair(BOARD_COORD.first + 6, BOARD_COORD.second + 6),
-   //       std::make_pair(BOARD_COORD.first + 7, BOARD_COORD.second + 4)
-   //    }
-   // );
-
    // add pawns
    for (int i = 0; i < NUM_PAWNS; ++i)
    {
       mPlayer2Pieces.push_back(
-         std::make_shared<Piece_n::Piece_c>(
+         new Piece_n::Piece_c(
             Piece_n::PAWN,
             p2_gunslinger_deployment_zones,
             reserve_position,
@@ -324,7 +454,7 @@ void Game_c::initPieces()
    for (int i = 0; i < NUM_GUNS; ++i)
    {
       mPlayer2Pieces.push_back(
-         std::make_shared<Piece_n::Piece_c>(
+         new Piece_n::Piece_c(
             Piece_n::GUN,
             p2_gunslinger_deployment_zones,
             reserve_position,
@@ -340,7 +470,7 @@ void Game_c::initPieces()
    for (int i = 0; i < NUM_SLINGERS; ++i)
    {
       mPlayer2Pieces.push_back(
-         std::make_shared<Piece_n::Piece_c>(
+         new Piece_n::Piece_c(
             Piece_n::SLINGER,
             p2_gunslinger_deployment_zones,
             reserve_position,
@@ -365,8 +495,7 @@ void Game_c::shootout()
          Piece_n::Direction_e direction = (*p1_it)->getDirection();
          hit_piece_index.push_back(
             std::make_pair(
-               1, 
-               detectHit(**p1_it, direction, mPlayer2Pieces)));
+               1, detectHit(**p1_it, direction, mPlayer2Pieces)));
 
          if ((*p1_it)->getPieceType() == Piece_n::SLINGER)
          {
@@ -380,8 +509,7 @@ void Game_c::shootout()
             }
             hit_piece_index.push_back(
                std::make_pair(
-                  1,
-                  detectHit(**p1_it, secondary_direction, mPlayer2Pieces)));
+                  1, detectHit(**p1_it, secondary_direction, mPlayer2Pieces)));
          }
       }
    }
@@ -393,8 +521,7 @@ void Game_c::shootout()
          Piece_n::Direction_e direction = (*p2_it)->getDirection();
          hit_piece_index.push_back(
             std::make_pair(
-               2,
-               detectHit(**p2_it, direction, mPlayer1Pieces)));
+               2, detectHit(**p2_it, direction, mPlayer1Pieces)));
 
          if ((*p2_it)->getPieceType() == Piece_n::SLINGER)
          {
@@ -408,8 +535,7 @@ void Game_c::shootout()
             }
             hit_piece_index.push_back(
                std::make_pair(
-                  2,
-                  detectHit(**p2_it, secondary_direction, mPlayer1Pieces)));
+                  2, detectHit(**p2_it, secondary_direction, mPlayer1Pieces)));
          }
       }
    }
@@ -425,7 +551,8 @@ void Game_c::shootout()
          }
          else // P2's hits
          {
-            mPlayer1Pieces.at(hit_it->second)->nextPlayState();         }
+            mPlayer1Pieces.at(hit_it->second)->nextPlayState();         
+         }
       }
    }
 }
@@ -590,5 +717,183 @@ bool Game_c::gameOver()
    else
    {
       return false;
+   }
+}
+
+void Game_c::shootout2()
+{
+   std::vector<PiecePtr> live_pieces;
+   std::vector<PiecePtr> hit_pieces;
+
+   std::vector<PiecePtr>::iterator p1_it;
+   for (p1_it = mPlayer1Pieces.begin(); p1_it != mPlayer1Pieces.end(); ++p1_it)
+   {
+      if ((*p1_it)->getPlayState() == Piece_n::LIVE)
+      {
+         live_pieces.push_back(*p1_it);
+      }
+   }
+
+   std::vector<PiecePtr>::iterator p2_it;
+   for (p2_it = mPlayer2Pieces.begin(); p2_it != mPlayer2Pieces.end(); ++p2_it)
+   {
+      if ((*p2_it)->getPlayState() == Piece_n::LIVE)
+      {
+         live_pieces.push_back(*p2_it);
+      }
+   }
+
+   std::vector<PiecePtr>::iterator it;
+   for (it = live_pieces.begin(); it != live_pieces.end(); ++it)
+   {
+      if ((*it)->getPieceType() != Piece_n::PAWN)
+      {
+         Piece_n::Direction_e direction = (*it)->getDirection();
+         detectHit2(**it, direction, live_pieces);
+
+         if ((*it)->getPieceType() == Piece_n::SLINGER)
+         {
+            Piece_n::Direction_e secondary_direction;
+            switch(direction)
+            {
+               case Piece_n::UP : { secondary_direction = Piece_n::RIGHT; }
+               case Piece_n::DOWN : { secondary_direction = Piece_n::LEFT; }
+               case Piece_n::LEFT : { secondary_direction = Piece_n::UP; }
+               case Piece_n::RIGHT : { secondary_direction = Piece_n::DOWN; }
+            }
+            detectHit2(**it, secondary_direction, live_pieces);
+         }
+      }
+   }
+}
+
+void Game_c::detectHit2(Piece_n::Piece_c& piece, 
+                        Piece_n::Direction_e direction,
+                        std::vector<PiecePtr>& pieces)
+{
+   std::cout << "detecting hit..." << std::endl;
+
+   // true once if we have already hit a piece (monodirectional)
+   bool hit_piece_flag = false;
+
+   // stores the hit piece closest to the shooter
+   PiecePtr hit_piece;
+
+   std::vector<PiecePtr>::iterator it;
+   for (it = pieces.begin(); it != pieces.end(); ++it)
+   { 
+      switch (direction)
+      {
+         case Piece_n::UP :
+         {
+            std::vector<PiecePtr>::iterator it;
+            for (it = pieces.begin(); it != pieces.end(); ++it)
+            {
+               if ((*it)->getPlayState() == Piece_n::LIVE)
+               {
+                  if ((*it)->getPosition().first == piece.getPosition().first &&
+                      (*it)->getPosition().second < piece.getPosition().second)
+                  {
+                     if (hit_piece_flag &&
+                        (*it)->getPosition().second > hit_piece->getPosition().second)
+                     {
+                        hit_piece = *it;
+                     }
+                     else
+                     {
+                        hit_piece = *it;
+                        hit_piece_flag = true;
+                     }
+                  }
+               }
+            }
+            break;
+         }
+         case Piece_n::DOWN :
+         {
+            std::vector<PiecePtr>::iterator it;
+            for (it = pieces.begin(); it != pieces.end(); ++it)
+            {
+               if ((*it)->getPlayState() == Piece_n::LIVE)
+               {
+                  if ((*it)->getPosition().first == piece.getPosition().first &&
+                     (*it)->getPosition().second > piece.getPosition().second)
+                  {
+                     if (hit_piece_flag &&
+                        (*it)->getPosition().second < hit_piece->getPosition().second)
+                     {
+                        hit_piece = *it;
+                     }
+                     else
+                     {
+                        hit_piece = *it;
+                        hit_piece_flag = true;
+                     }
+                  }
+               }
+            }
+            break;
+         }
+         case Piece_n::LEFT :
+         {
+            std::vector<PiecePtr>::iterator it;
+            for (it = pieces.begin(); it != pieces.end(); ++it)
+            {
+               if ((*it)->getPlayState() == Piece_n::LIVE)
+               {
+                  if ((*it)->getPosition().second == piece.getPosition().second &&
+                      (*it)->getPosition().first < piece.getPosition().first)
+                  {
+                     if (hit_piece_flag &&
+                        (*it)->getPosition().first > hit_piece->getPosition().first)
+                     {
+                        hit_piece = *it;
+                     }
+                     else
+                     {
+                        hit_piece = *it;
+                        hit_piece_flag = true;
+                     }
+                  }
+               }
+            }
+            break;
+         }
+         case Piece_n::RIGHT :
+         {
+            std::vector<PiecePtr>::iterator it;
+            for (it = pieces.begin(); it != pieces.end(); ++it)
+            {
+               if ((*it)->getPlayState() == Piece_n::LIVE)
+               {
+                  if ((*it)->getPosition().second == piece.getPosition().second &&
+                      (*it)->getPosition().first > piece.getPosition().first)
+                  {
+                     if (hit_piece_flag &&
+                        (*it)->getPosition().first < hit_piece->getPosition().first)
+                     {
+                        hit_piece = *it;
+                     }
+                     else
+                     {
+                        hit_piece = *it;
+                        hit_piece_flag = true;
+                     }
+                  }
+               }
+            }
+            break;
+         }
+         default :
+         {
+            // in case a reserve piece is hit inadvertently 
+            break;
+         }
+      }
+   }
+
+   if (piece.getTeam() != hit_piece->getTeam())
+   {
+      hit_piece->nextPlayState();
    }
 }
